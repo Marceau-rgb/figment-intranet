@@ -358,6 +358,16 @@ button{font-family:inherit}
   .street-caption{margin-top:4px}
   .footer-address-line{margin-top:8px;font-size:11.5px}
 }
+
+/* FLOATING SELECTION TOOLBAR (Bold / Italic / Underline) */
+.sel-toolbar{position:absolute;top:0;left:0;transform:translate(-50%,-100%);display:none;background:#fff;border:1px solid var(--border);border-radius:8px;padding:4px;gap:2px;box-shadow:var(--shadow-lg);z-index:500}
+.sel-toolbar.open{display:flex}
+.sel-toolbar button{background:none;border:none;color:var(--text-2);width:28px;height:28px;border-radius:5px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;font-family:inherit}
+.sel-toolbar button:hover{background:#f2f2f7}
+.sel-toolbar button.active{background:var(--accent-soft);color:var(--accent)}
+.sel-toolbar-sep{width:1px;background:var(--border);margin:3px 2px}
+.sel-color-btn{font-size:16px!important;line-height:1}
+@media print{.sel-toolbar{display:none!important}}
 </style>
 </head>
 <body>
@@ -1784,17 +1794,17 @@ function saveCurrentCsFromDom(){
   if(!cs)return;
   const root=document.getElementById("cs-root");
   if(!root)return;
-  cs.client=document.getElementById("cs-client").textContent.trim();
-  cs.title=document.getElementById("cs-title").textContent.trim();
-  cs.subtitle=document.getElementById("cs-subtitle").textContent.trim();
+  cs.client=document.getElementById("cs-client").innerHTML.trim();
+  cs.title=document.getElementById("cs-title").innerHTML.trim();
+  cs.subtitle=document.getElementById("cs-subtitle").innerHTML.trim();
   cs.date=document.getElementById("cs-date").textContent.trim();
-  cs.basecampAddr=document.getElementById("cs-basecamp-addr").textContent.trim();
+  cs.basecampAddr=document.getElementById("cs-basecamp-addr").innerHTML.trim();
   cs.basecampContacts=document.getElementById("cs-basecamp-contacts").innerHTML;
   cs.weatherMorning=document.getElementById("cs-wm").textContent.trim();
   cs.weatherMorningWind=document.getElementById("cs-wmw").textContent.trim();
   cs.weatherEvening=document.getElementById("cs-we").textContent.trim();
   cs.weatherEveningWind=document.getElementById("cs-wew").textContent.trim();
-  cs.mapAddress=document.getElementById("cs-map-address").textContent.trim();
+  cs.mapAddress=document.getElementById("cs-map-address").innerHTML.trim();
 
   cs.sections=[...root.querySelectorAll(".cs-section-block")].map(block=>{
     const name=block.querySelector(".section-name").textContent.trim();
@@ -1802,21 +1812,25 @@ function saveCurrentCsFromDom(){
     const rows=[...block.querySelectorAll("tbody tr")].map(tr=>{
       const cells=tr.querySelectorAll("td");
       if(isPractical){
+        const contactRaw=cells[3].textContent.trim();
+        const isCo=contactRaw.toLowerCase()==="c/o figment";
         return{
-          pos:cells[0].textContent.trim(),
-          name:cells[1].textContent.trim(),
-          call:cells[2].textContent.trim(),
-          contact:"raw",
-          contactVal:cells[3].textContent.trim(),
+          pos:cells[0].innerHTML.trim(),
+          name:cells[1].innerHTML.trim(),
+          call:cells[2].innerHTML.trim(),
+          contact:isCo?"c/o":"raw",
+          contactVal:isCo?"":cells[3].innerHTML.trim(),
         };
       }
+      const contactRaw=cells[4].textContent.trim();
+      const isCo=contactRaw.toLowerCase()==="c/o figment";
       return{
-        pos:cells[0].textContent.trim(),
-        name:cells[1].textContent.trim(),
-        agency:cells[2].textContent.trim(),
-        call:cells[3].textContent.trim(),
-        contact:"raw",
-        contactVal:cells[4].textContent.trim(),
+        pos:cells[0].innerHTML.trim(),
+        name:cells[1].innerHTML.trim(),
+        agency:cells[2].innerHTML.trim(),
+        call:cells[3].innerHTML.trim(),
+        contact:isCo?"c/o":"raw",
+        contactVal:isCo?"":cells[4].innerHTML.trim(),
       };
     });
     return isPractical?{name,variant:"practical",rows}:{name,agencyLabel:block.querySelector("thead th.agency-header").textContent.trim(),rows};
@@ -1847,6 +1861,78 @@ document.addEventListener("focusout",e=>{
   if(currentApp==="callsheets"&&activeCsId&&e.target.closest("#cs-root")){
     saveCurrentCsFromDom();
   }
+});
+
+/* ══ FLOATING SELECTION TOOLBAR — Bold / Italic / Underline ══
+   Appears above any text you highlight inside the call sheet editor
+   (title, notes, table cells…) and applies simple formatting. Scoped to
+   #cs-root so it never shows up in the Contacts app. */
+let selectionToolbarEl=null;
+function ensureSelectionToolbar(){
+  if(selectionToolbarEl)return selectionToolbarEl;
+  const el=document.createElement("div");
+  el.className="sel-toolbar";
+  el.innerHTML=`
+    <button data-cmd="bold" onmousedown="event.preventDefault()" onclick="applyTextFormat('bold')"><b>B</b></button>
+    <button data-cmd="italic" onmousedown="event.preventDefault()" onclick="applyTextFormat('italic')"><i>I</i></button>
+    <button data-cmd="underline" onmousedown="event.preventDefault()" onclick="applyTextFormat('underline')"><u>U</u></button>
+    <span class="sel-toolbar-sep"></span>
+    <button class="sel-color-btn" style="color:#007aff" title="Blue" onmousedown="event.preventDefault()" onclick="applyTextColor('#007aff')">●</button>
+    <button class="sel-color-btn" style="color:#ff3b30" title="Red" onmousedown="event.preventDefault()" onclick="applyTextColor('#ff3b30')">●</button>
+    <button class="sel-color-btn" style="color:#8e8e93" title="Grey" onmousedown="event.preventDefault()" onclick="applyTextColor('#8e8e93')">●</button>
+    <button class="sel-color-btn" style="color:#1c1c1e" title="Black" onmousedown="event.preventDefault()" onclick="applyTextColor('#1c1c1e')">●</button>
+    <button class="sel-color-btn" style="color:#ffcc00" title="Yellow" onmousedown="event.preventDefault()" onclick="applyTextColor('#ffcc00')">●</button>
+    <button class="sel-color-btn" style="color:#34c759" title="Green" onmousedown="event.preventDefault()" onclick="applyTextColor('#34c759')">●</button>`;
+  document.body.appendChild(el);
+  selectionToolbarEl=el;
+  return el;
+}
+function applyTextFormat(cmd){
+  document.execCommand(cmd,false,null);
+  updateSelectionToolbarState();
+  if(currentApp==="callsheets"&&activeCsId)saveCurrentCsFromDom();
+}
+function applyTextColor(color){
+  document.execCommand("foreColor",false,color);
+  if(currentApp==="callsheets"&&activeCsId)saveCurrentCsFromDom();
+}
+function updateSelectionToolbarState(){
+  if(!selectionToolbarEl)return;
+  selectionToolbarEl.querySelectorAll("button").forEach(b=>{
+    let active=false;
+    try{active=document.queryCommandState(b.dataset.cmd);}catch(e){}
+    b.classList.toggle("active",active);
+  });
+}
+function hideSelectionToolbar(){if(selectionToolbarEl)selectionToolbarEl.classList.remove("open");}
+function maybeShowSelectionToolbar(){
+  const sel=window.getSelection();
+  if(!sel||sel.isCollapsed||sel.rangeCount===0){hideSelectionToolbar();return;}
+  const anchor=sel.anchorNode;
+  const anchorEl=anchor&&(anchor.nodeType===1?anchor:anchor.parentElement);
+  const editable=anchorEl&&anchorEl.closest&&anchorEl.closest("[contenteditable]");
+  const insideCsRoot=anchorEl&&anchorEl.closest&&anchorEl.closest("#cs-root");
+  if(!editable||!insideCsRoot){hideSelectionToolbar();return;}
+  const rect=sel.getRangeAt(0).getBoundingClientRect();
+  if(!rect||(rect.width===0&&rect.height===0)){hideSelectionToolbar();return;}
+  const toolbar=ensureSelectionToolbar();
+  toolbar.style.top=(rect.top+window.scrollY-10)+"px";
+  toolbar.style.left=(rect.left+window.scrollX+rect.width/2)+"px";
+  toolbar.classList.add("open");
+  updateSelectionToolbarState();
+}
+document.addEventListener("mouseup",e=>{
+  if(e.target.closest&&e.target.closest(".sel-toolbar"))return;
+  setTimeout(maybeShowSelectionToolbar,0);
+});
+document.addEventListener("keyup",e=>{
+  if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest("#cs-root [contenteditable]")){
+    setTimeout(maybeShowSelectionToolbar,0);
+  }
+});
+document.addEventListener("selectionchange",()=>{
+  const sel=window.getSelection();
+  if(!sel||sel.isCollapsed)hideSelectionToolbar();
 });
 
 /* ═══════════════════════════════════════════════════════════════
