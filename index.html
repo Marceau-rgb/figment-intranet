@@ -190,8 +190,10 @@ button{font-family:inherit}
 .mini-btn.del-btn:hover{background:#fff0ef;color:var(--red)}
 .section-header-row .mini-btn{font-size:10px;color:var(--text-4)}
 .section-header-row .mini-btn:hover{background:#e5e5ea;color:var(--text-2)}
+.section-header-row .mini-btn.del-btn:hover{background:#fff0ef;color:var(--red)}
 [contenteditable]{outline:none;border-radius:4px;transition:background 0.15s,box-shadow 0.15s;min-width:16px;display:inline-block}
 .cs-table td[contenteditable]{display:table-cell;border-radius:0}
+.cs-table th[contenteditable]{display:table-cell;border-radius:0}
 .cs-header-bottom [contenteditable]{display:block}
 [contenteditable]:hover{background:rgba(0,122,255,0.06)}
 [contenteditable]:focus{background:rgba(0,122,255,0.08);box-shadow:0 0 0 2px rgba(0,122,255,0.2)}
@@ -266,6 +268,10 @@ button{font-family:inherit}
 .cat-pills{display:flex;gap:5px;flex-wrap:wrap}
 .cat-pill{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--text-3);transition:all 0.15s}
 .cat-pill.sel{color:#fff;border-color:transparent}
+.cat-color-swatches{display:flex;gap:8px;flex-wrap:wrap}
+.cat-color-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform 0.1s}
+.cat-color-swatch:hover{transform:scale(1.1)}
+.cat-color-swatch.sel{border-color:#000}
 .tag-preview{display:flex;flex-wrap:wrap;gap:5px;min-height:22px}
 .tag-rm{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500;background:#f2f2f7;color:var(--text-2)}
 .tag-rm-btn{cursor:pointer;color:var(--text-4);font-size:13px;line-height:1}
@@ -377,13 +383,17 @@ button{font-family:inherit}
     <div class="sidebar-scroll">
       <!-- CONTACTS NAV -->
       <div id="nav-contacts">
-        <div class="sidebar-section">Catégories</div>
+        <div class="sidebar-section">Categories</div>
         <div id="nav-all" class="nav-item active" onclick="setContactFilter('all')">
           <div class="nav-icon" style="background:#f2f2f7;font-size:13px">⊞</div>
-          <span>Tous</span>
+          <span>All</span>
           <span class="nav-count" id="count-all">0</span>
         </div>
         <div id="nav-list"></div>
+        <div class="nav-item" data-noprint onclick="openNewCategoryModal()" style="color:var(--accent)">
+          <div class="nav-icon" style="background:var(--accent-soft);font-size:13px">＋</div>
+          <span>New category</span>
+        </div>
       </div>
 
       <!-- CALL SHEETS NAV -->
@@ -394,7 +404,7 @@ button{font-family:inherit}
     </div>
 
     <div class="sidebar-footer">
-      <button class="btn-new-sidebar" id="btn-new-sidebar" onclick="handleSidebarNew()">＋ Nouveau contact</button>
+      <button class="btn-new-sidebar" id="btn-new-sidebar" onclick="handleSidebarNew()">＋ New contact</button>
     </div>
   </aside>
 
@@ -405,11 +415,11 @@ button{font-family:inherit}
     <div class="topbar" id="topbar-contacts">
       <div class="search-wrap">
         <span class="search-icon">⌕</span>
-        <input class="search-input" id="search" placeholder="Rechercher…" oninput="renderContacts()">
+        <input class="search-input" id="search" placeholder="Search…" oninput="renderContacts()">
       </div>
       <div class="topbar-right">
         <select id="tag-select" class="select-mini" onchange="renderContacts()">
-          <option value="">Tous les tags</option>
+          <option value="">All tags</option>
         </select>
         <span class="count-badge" id="count-badge"></span>
       </div>
@@ -459,32 +469,32 @@ button{font-family:inherit}
   </div>
 </div>
 
-<!-- MODAL: NOUVEAU CONTACT -->
+<!-- MODAL: NEW CONTACT -->
 <div class="overlay" id="contact-overlay" onclick="handleContactOverlay(event)">
   <div class="sheet">
     <div class="sheet-head">
-      <div class="sheet-title" id="contact-sheet-title">Nouveau contact</div>
+      <div class="sheet-title" id="contact-sheet-title">New contact</div>
       <button class="btn-close" onclick="closeContactModal()">✕</button>
     </div>
     <div class="sheet-body">
       <div class="field">
-        <div class="lbl">Catégorie</div>
+        <div class="lbl">Category</div>
         <div class="cat-pills" id="cat-pills"></div>
       </div>
       <div class="field-row">
-        <div class="field"><div class="lbl">Nom</div><input class="inp" id="f-nom" placeholder="Nom complet"></div>
-        <div class="field"><div class="lbl">Poste</div><input class="inp" id="f-poste" placeholder="Rôle"></div>
+        <div class="field"><div class="lbl">Name</div><input class="inp" id="f-nom" placeholder="Full name"></div>
+        <div class="field"><div class="lbl">Role</div><input class="inp" id="f-poste" placeholder="Role"></div>
       </div>
-      <div class="field"><div class="lbl">Entreprise</div><input class="inp" id="f-entreprise" placeholder="Nom de la société"></div>
+      <div class="field"><div class="lbl">Company</div><input class="inp" id="f-entreprise" placeholder="Company name"></div>
       <div class="field-row">
-        <div class="field"><div class="lbl">Email</div><input class="inp" id="f-email" placeholder="email@exemple.fr"></div>
-        <div class="field"><div class="lbl">Téléphone</div><input class="inp" id="f-telephone" placeholder="+33 6…"></div>
+        <div class="field"><div class="lbl">Email</div><input class="inp" id="f-email" placeholder="email@example.com"></div>
+        <div class="field"><div class="lbl">Phone</div><input class="inp" id="f-telephone" placeholder="+1 555…"></div>
       </div>
       <div class="field-row">
-        <div class="field"><div class="lbl">Agence</div><input class="inp" id="f-agence" placeholder="Nom de l'agence"></div>
-        <div class="field"><div class="lbl">Contact agence</div><input class="inp" id="f-agenceContact" placeholder="email agence"></div>
+        <div class="field"><div class="lbl">Agency</div><input class="inp" id="f-agence" placeholder="Agency name"></div>
+        <div class="field"><div class="lbl">Agency contact</div><input class="inp" id="f-agenceContact" placeholder="Agency email"></div>
       </div>
-      <div class="field"><div class="lbl">Lien Drive / Portfolio / Instagram</div><input class="inp" id="f-driveLink" placeholder="https://…"></div>
+      <div class="field"><div class="lbl">Drive / Portfolio / Instagram link</div><input class="inp" id="f-driveLink" placeholder="https://…"></div>
       <div class="field">
         <div class="lbl">Tags</div>
         <div class="tag-preview" id="tag-preview"></div>
@@ -493,11 +503,11 @@ button{font-family:inherit}
           <button class="btn-add-tag" onclick="addTag()">+</button>
         </div>
       </div>
-      <div class="field"><div class="lbl">Notes</div><textarea class="txt" id="f-notes" placeholder="Tarifs, disponibilités, remarques…"></textarea></div>
+      <div class="field"><div class="lbl">Notes</div><textarea class="txt" id="f-notes" placeholder="Rates, availability, remarks…"></textarea></div>
     </div>
     <div class="sheet-foot">
-      <button class="btn-cancel" onclick="closeContactModal()">Annuler</button>
-      <button class="btn-save" onclick="saveContact()">Enregistrer</button>
+      <button class="btn-cancel" onclick="closeContactModal()">Cancel</button>
+      <button class="btn-save" onclick="saveContact()">Save</button>
     </div>
   </div>
 </div>
@@ -538,6 +548,30 @@ button{font-family:inherit}
   </div>
 </div>
 
+<!-- MODAL: NEW CONTACT CATEGORY -->
+<div class="overlay" id="newcategory-overlay" onclick="handleNewCategoryOverlay(event)">
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="sheet-title">New category</div>
+      <button class="btn-close" onclick="closeNewCategoryModal()">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="field-row">
+        <div class="field"><div class="lbl">Icon (emoji)</div><input class="inp" id="new-cat-icon" placeholder="🎬" maxlength="4"></div>
+        <div class="field"><div class="lbl">Name</div><input class="inp" id="new-cat-name" placeholder="e.g. Location Scouts"></div>
+      </div>
+      <div class="field">
+        <div class="lbl">Color</div>
+        <div class="cat-color-swatches" id="new-cat-colors"></div>
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn-cancel" onclick="closeNewCategoryModal()">Cancel</button>
+      <button class="btn-save" onclick="createCategory()">Create</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ═══════════════════════════════════════════════════════════════
    APP SWITCHING
@@ -559,7 +593,7 @@ function switchApp(app){
   document.getElementById("topbar-cslist").classList.toggle("hidden",!(app==="callsheets"&&!activeCsId));
   document.getElementById("topbar-cseditor").classList.toggle("hidden",!(app==="callsheets"&&!!activeCsId));
 
-  document.getElementById("btn-new-sidebar").textContent=app==="contacts"?"＋ Nouveau contact":"＋ New call sheet";
+  document.getElementById("btn-new-sidebar").textContent=app==="contacts"?"＋ New contact":"＋ New call sheet";
   document.getElementById("btn-new-sidebar").onclick=app==="contacts"?()=>openContactModal(null):openNewCsModal;
 
   if(app==="callsheets"){renderCsNav();if(!activeCsId)renderCsList();}
@@ -573,38 +607,38 @@ function handleSidebarNew(){
 /* ═══════════════════════════════════════════════════════════════
    CONTACTS DATA & LOGIC
    ═══════════════════════════════════════════════════════════════ */
-const CATS=[
-  {id:"assistant_prod", label:"Assistants Prod",       icon:"👤", color:"#007aff"},
-  {id:"photo_assistant",label:"Assistants Photo",      icon:"📷", color:"#5856d6"},
-  {id:"agence_talent",  label:"Agences Talents",       icon:"🏢", color:"#34c759"},
-  {id:"regie_tech",     label:"Régie / Tech / Travel", icon:"🔧", color:"#ff9500"},
+let CATS=[
+  {id:"assistant_prod", label:"Prod Assistants",       icon:"👤", color:"#007aff"},
+  {id:"photo_assistant",label:"Photo Assistants",      icon:"📷", color:"#5856d6"},
+  {id:"agence_talent",  label:"Talent Agencies",       icon:"🏢", color:"#34c759"},
+  {id:"regie_tech",     label:"Set / Tech / Travel",   icon:"🔧", color:"#ff9500"},
   {id:"flowers",        label:"Flowers & Objects",     icon:"🌸", color:"#ff2d55"},
   {id:"catering",       label:"Catering",              icon:"🍽", color:"#30b0c7"},
-  {id:"hotels",         label:"Hôtels & Restau",       icon:"🏨", color:"#af52de"},
-  {id:"models",         label:"Non Reco Models",       icon:"⚠️", color:"#ff3b30"},
+  {id:"hotels",         label:"Hotels & Restaurants",  icon:"🏨", color:"#af52de"},
+  {id:"models",         label:"Non-Reco Models",       icon:"⚠️", color:"#ff3b30"},
   {id:"photographers",  label:"Photographers",         icon:"🎞", color:"#636366"},
   {id:"sponsors",       label:"Sponsors",              icon:"⭐", color:"#ff9f0a"},
 ];
 
 let CONTACTS=[
-  {id:101,category:"assistant_prod",nom:"Quentin Isackson",poste:"Prod Assistant",email:"qisack@gmail.com",telephone:"+33 6 49 19 48 92",agence:"",tags:["paris","photo assistant","driver"],notes:"De Clara, peut aussi faire photo assistant argentique",driveLink:"https://www.instagram.com/quentinisackson/",rating:5},
+  {id:101,category:"assistant_prod",nom:"Quentin Isackson",poste:"Prod Assistant",email:"qisack@gmail.com",telephone:"+33 6 49 19 48 92",agence:"",tags:["paris","photo assistant","driver"],notes:"From Clara, can also work as a film photo assistant",driveLink:"https://www.instagram.com/quentinisackson/",rating:5},
   {id:102,category:"assistant_prod",nom:"Dejan Trajkov",poste:"Prod Assistant",email:"dejan.trajkov@gmail.com",telephone:"+33 6 25 00 73 56",agence:"",tags:["paris","driver"],notes:"",driveLink:"",rating:5},
-  {id:103,category:"assistant_prod",nom:"Foucauld de Kergorlay",poste:"Prod Assistant",email:"foucal@gmail.com",telephone:"+33 6 15 89 92 67",agence:"",tags:["paris"],notes:"De Clara",driveLink:"",rating:5},
-  {id:104,category:"assistant_prod",nom:"Arthur Debriffe",poste:"Prod Assistant",email:"arthurdebriffe@gmail.com",telephone:"+33 6 63 34 79 46",agence:"",tags:["paris","driver"],notes:"Bien en coordo casting fittings",driveLink:"",rating:5},
-  {id:105,category:"assistant_prod",nom:"Robin Delamare",poste:"Prod Assistant",email:"robindelamare@gmail.com",telephone:"+33 6 35 54 74 18",agence:"",tags:["paris"],notes:"A déjà annulé un job pour lequel il était en 1st..",driveLink:"",rating:4},
+  {id:103,category:"assistant_prod",nom:"Foucauld de Kergorlay",poste:"Prod Assistant",email:"foucal@gmail.com",telephone:"+33 6 15 89 92 67",agence:"",tags:["paris"],notes:"From Clara",driveLink:"",rating:5},
+  {id:104,category:"assistant_prod",nom:"Arthur Debriffe",poste:"Prod Assistant",email:"arthurdebriffe@gmail.com",telephone:"+33 6 63 34 79 46",agence:"",tags:["paris","driver"],notes:"Good at coordinating casting fittings",driveLink:"",rating:5},
+  {id:105,category:"assistant_prod",nom:"Robin Delamare",poste:"Prod Assistant",email:"robindelamare@gmail.com",telephone:"+33 6 35 54 74 18",agence:"",tags:["paris"],notes:"Already cancelled a job where he was booked as 1st..",driveLink:"",rating:4},
   {id:106,category:"assistant_prod",nom:"Sarah Jeanne Bailly",poste:"Prod Assistant",email:"sarahjeanne.bailly@gmail.com",telephone:"+33 6 83 68 31 33",agence:"",tags:["paris"],notes:"",driveLink:"",rating:5},
-  {id:107,category:"assistant_prod",nom:"Famory Dembele",poste:"Prod Assistant",email:"famorydembele@gmail.com",telephone:"+33 6 46 42 34 40",agence:"",tags:["paris","driver"],notes:"400€/jour",driveLink:"https://www.instagram.com/famory.dmb/",rating:5},
-  {id:108,category:"assistant_prod",nom:"Jérémy Silva Cardoso",poste:"Prod Assistant",email:"contact@jeremycardoso.com",telephone:"+33 6 64 82 42 83",agence:"",tags:["paris","photo assistant"],notes:"Bien + connaît notre stock",driveLink:"",rating:5},
+  {id:107,category:"assistant_prod",nom:"Famory Dembele",poste:"Prod Assistant",email:"famorydembele@gmail.com",telephone:"+33 6 46 42 34 40",agence:"",tags:["paris","driver"],notes:"€400/day",driveLink:"https://www.instagram.com/famory.dmb/",rating:5},
+  {id:108,category:"assistant_prod",nom:"Jérémy Silva Cardoso",poste:"Prod Assistant",email:"contact@jeremycardoso.com",telephone:"+33 6 64 82 42 83",agence:"",tags:["paris","photo assistant"],notes:"Good + knows our stock",driveLink:"",rating:5},
   {id:109,category:"assistant_prod",nom:"Thi-Lea Le",poste:"Prod Assistant",email:"tl.thileale@gmail.com",telephone:"",agence:"",tags:["paris","photo assistant"],notes:"",driveLink:"",rating:5},
-  {id:110,category:"assistant_prod",nom:"Mathieu Mathon",poste:"Prod Assistant",email:"mathon.au@gmail.com",telephone:"+33 6 66 37 63 94",agence:"",tags:["paris"],notes:"400€/10h + 35€/h lookbooks. 350€/jour prépa.",driveLink:""},
-  {id:111,category:"assistant_prod",nom:"Enzo Martin",poste:"Prod Assistant",email:"enzo.nitram@gmail.com",telephone:"+33 6 22 97 90 97",agence:"",tags:["paris"],notes:"De Clara",driveLink:"",rating:5},
+  {id:110,category:"assistant_prod",nom:"Mathieu Mathon",poste:"Prod Assistant",email:"mathon.au@gmail.com",telephone:"+33 6 66 37 63 94",agence:"",tags:["paris"],notes:"€400/10h + €35/h for lookbooks. €350/day prep.",driveLink:""},
+  {id:111,category:"assistant_prod",nom:"Enzo Martin",poste:"Prod Assistant",email:"enzo.nitram@gmail.com",telephone:"+33 6 22 97 90 97",agence:"",tags:["paris"],notes:"From Clara",driveLink:"",rating:5},
   {id:112,category:"assistant_prod",nom:"Julien Fernandes",poste:"Prod Assistant",email:"julienfernandes718@gmail.com",telephone:"+33 6 22 85 35 95",agence:"",tags:["paris","driver"],notes:"",driveLink:"",rating:5},
-  {id:113,category:"assistant_prod",nom:"Donatien Bossy",poste:"Prod Assistant",email:"dna.bossy@gmail.com",telephone:"+33 6 59 05 31 88",agence:"",tags:["paris","driver"],notes:"Ne travaille plus en dessous de 450€/12h",driveLink:"",rating:5},
+  {id:113,category:"assistant_prod",nom:"Donatien Bossy",poste:"Prod Assistant",email:"dna.bossy@gmail.com",telephone:"+33 6 59 05 31 88",agence:"",tags:["paris","driver"],notes:"No longer works for less than €450/12h",driveLink:"",rating:5},
   {id:114,category:"assistant_prod",nom:"Will Halbers",poste:"Prod Assistant",email:"williamhalbers@gmail.com",telephone:"+33 6 80 95 31 39",agence:"",tags:["paris","driver"],notes:"",driveLink:"",rating:5},
   {id:115,category:"assistant_prod",nom:"Matthieu Perdrizet",poste:"Prod Assistant",email:"matthieu.perdrizet@gmail.com",telephone:"+33 6 76 83 04 68",agence:"",tags:["paris","driver"],notes:"",driveLink:"",rating:4},
-  {id:116,category:"assistant_prod",nom:"Lois Trompesance",poste:"Prod Assistant",email:"ltrompesance@gmail.com",telephone:"",agence:"",tags:["paris"],notes:"Super en roadie — à tester en PA",driveLink:""},
-  {id:117,category:"assistant_prod",nom:"Michel Tran",poste:"Prod Assistant",email:"tran.michel.contact@gmail.com",telephone:"",agence:"",tags:[],notes:"Manutention surtout. Peut faire asst caméra video",driveLink:""},
-  {id:201,category:"photo_assistant",nom:"Quentin Chamard-Bois",poste:"1st Photo Asst",email:"info@quentinchamardbois.com",telephone:"+33 6 63 72 75 29",agence:"",tags:["paris","1st asst"],notes:"Top / expensive. Travaille avec Camille Summers Valli",driveLink:""},
+  {id:116,category:"assistant_prod",nom:"Lois Trompesance",poste:"Prod Assistant",email:"ltrompesance@gmail.com",telephone:"",agence:"",tags:["paris"],notes:"Great as a roadie — worth testing as a Prod Assistant",driveLink:""},
+  {id:117,category:"assistant_prod",nom:"Michel Tran",poste:"Prod Assistant",email:"tran.michel.contact@gmail.com",telephone:"",agence:"",tags:[],notes:"Mostly handling/loading. Can work as video camera assistant",driveLink:""},
+  {id:201,category:"photo_assistant",nom:"Quentin Chamard-Bois",poste:"1st Photo Asst",email:"info@quentinchamardbois.com",telephone:"+33 6 63 72 75 29",agence:"",tags:["paris","1st asst"],notes:"Top / expensive. Works with Camille Summers Valli",driveLink:""},
   {id:202,category:"photo_assistant",nom:"Peter Keyser",poste:"1st Photo Asst",email:"anotherpeter@gmail.com",telephone:"+33 6 10 53 79 82",agence:"",tags:["paris","1st asst"],notes:"1st asst / top ++",driveLink:""},
   {id:203,category:"photo_assistant",nom:"Virgile Biechy",poste:"1st Photo Asst",email:"biechyvirgile@gmail.com",telephone:"+33 6 80 98 42 57",agence:"",tags:["paris","1st asst"],notes:"+++",driveLink:""},
   {id:204,category:"photo_assistant",nom:"Jules Martin",poste:"1st Photo Asst",email:"contact@julesmartin.fr",telephone:"",agence:"",tags:["paris","1st asst"],notes:"Top",driveLink:""},
@@ -616,18 +650,18 @@ let CONTACTS=[
   {id:210,category:"photo_assistant",nom:"Alexandre Sallé de Chou",poste:"1st Photo Asst",email:"alex.salledechou@gmail.com",telephone:"+33 6 03 37 46 64",agence:"",tags:["paris","1st asst"],notes:"",driveLink:""},
   {id:211,category:"photo_assistant",nom:"Adrien Turlais",poste:"1st Photo Asst",email:"adrien.pro.t75@gmail.com",telephone:"",agence:"",tags:["paris","1st asst"],notes:"",driveLink:""},
   {id:212,category:"photo_assistant",nom:"Aurelien Hatt",poste:"Photo Asst",email:"aurelien.hatt1@gmail.com",telephone:"+33 6 26 55 08 52",agence:"",tags:["paris","2nd/3rd asst"],notes:"",driveLink:""},
-  {id:213,category:"photo_assistant",nom:"Yulia Dryablova",poste:"Photo Asst",email:"yuliadg@gmail.com",telephone:"",agence:"",tags:["2nd asst"],notes:"Très bonne 2nd",driveLink:""},
+  {id:213,category:"photo_assistant",nom:"Yulia Dryablova",poste:"Photo Asst",email:"yuliadg@gmail.com",telephone:"",agence:"",tags:["2nd asst"],notes:"Very good as 2nd",driveLink:""},
   {id:214,category:"photo_assistant",nom:"Jakub Fulin",poste:"Photo Asst",email:"fulinjakub@gmail.com",telephone:"+33 6 25 13 82 00",agence:"",tags:["paris","1st asst"],notes:"Reco Rémi Procureur / expensive",driveLink:""},
-  {id:215,category:"photo_assistant",nom:"Paul-Antoine Goutal",poste:"1st Photo Asst",email:"paulantoinegoutal@gmail.com",telephone:"+33 6 08 88 87 17",agence:"",tags:["paris","1st asst"],notes:"Travaille avec Parker Woods",driveLink:""},
-  {id:216,category:"photo_assistant",nom:"Quentin Farriol",poste:"1st Photo Asst",email:"quentinfarriol@gmail.com",telephone:"+33 6 76 01 66 59",agence:"",tags:["paris","1st asst"],notes:"Travaille avec Joshua Woods",driveLink:""},
+  {id:215,category:"photo_assistant",nom:"Paul-Antoine Goutal",poste:"1st Photo Asst",email:"paulantoinegoutal@gmail.com",telephone:"+33 6 08 88 87 17",agence:"",tags:["paris","1st asst"],notes:"Works with Parker Woods",driveLink:""},
+  {id:216,category:"photo_assistant",nom:"Quentin Farriol",poste:"1st Photo Asst",email:"quentinfarriol@gmail.com",telephone:"+33 6 76 01 66 59",agence:"",tags:["paris","1st asst"],notes:"Works with Joshua Woods",driveLink:""},
   {id:217,category:"photo_assistant",nom:"Christian Robinson",poste:"Photo Asst / Rental NYC",email:"c.w.robinson146@gmail.com",telephone:"+1 (908) 433-8824",agence:"",tags:["nyc"],notes:"Asst Maxime La + Owner Rental NYC. FR: +33 7 66 86 35 86",driveLink:""},
   {id:218,category:"photo_assistant",nom:"Moïra Laurent",poste:"Photo Asst",email:"moira.laurent@gmail.com",telephone:"+33 6 41 97 36 25",agence:"",tags:["paris","2nd asst"],notes:"Good with films",driveLink:""},
   {id:219,category:"photo_assistant",nom:"Mikael Fakhri",poste:"Photo Asst",email:"post@mikaelfakhri.com",telephone:"+33 7 85 71 39 74",agence:"",tags:[],notes:"",driveLink:""},
   {id:220,category:"photo_assistant",nom:"Benjamin Coppola",poste:"Photo Asst",email:"benjamin.coppola@gmail.com",telephone:"+33 7 86 52 27 10",agence:"",tags:["paris"],notes:"",driveLink:""},
-  {id:222,category:"photo_assistant",nom:"Pierre Nowak",poste:"1st Photo Asst",email:"pierrealexandrenowak@gmail.com",telephone:"+33 6 62 33 48 28",agence:"",tags:["paris","1st asst"],notes:"Travaille avec Carlijn Jacobs",driveLink:""},
-  {id:223,category:"photo_assistant",nom:"Remi Procureur",poste:"Photo Asst",email:"contact@remiprocureur.com",telephone:"+33 6 79 52 35 97",agence:"",tags:["paris"],notes:"Still doing asst jobs? Travaille avec Corentin Leroux",driveLink:""},
+  {id:222,category:"photo_assistant",nom:"Pierre Nowak",poste:"1st Photo Asst",email:"pierrealexandrenowak@gmail.com",telephone:"+33 6 62 33 48 28",agence:"",tags:["paris","1st asst"],notes:"Works with Carlijn Jacobs",driveLink:""},
+  {id:223,category:"photo_assistant",nom:"Remi Procureur",poste:"Photo Asst",email:"contact@remiprocureur.com",telephone:"+33 6 79 52 35 97",agence:"",tags:["paris"],notes:"Still doing asst jobs? Works with Corentin Leroux",driveLink:""},
   {id:224,category:"photo_assistant",nom:"Chloe May Truong",poste:"Photo Asst",email:"chloemaytruong@gmail.com",telephone:"+33 6 13 78 40 20",agence:"",tags:["paris","1st/2nd asst"],notes:"",driveLink:""},
-  {id:225,category:"photo_assistant",nom:"Shane Woodward",poste:"Photo Asst",email:"shanewoodward2@gmail.com",telephone:"+33 6 63 36 47 81",agence:"",tags:["uk"],notes:"Pas en montage",driveLink:""},
+  {id:225,category:"photo_assistant",nom:"Shane Woodward",poste:"Photo Asst",email:"shanewoodward2@gmail.com",telephone:"+33 6 63 36 47 81",agence:"",tags:["uk"],notes:"Not available for editing",driveLink:""},
   {id:226,category:"photo_assistant",nom:"Rosalie Nguyen",poste:"Photo Asst",email:"enokibutter@gmail.com",telephone:"",agence:"",tags:["paris","2nd asst"],notes:"Top / 2nd?",driveLink:""},
   {id:301,category:"agence_talent",nom:"Intrepid London",email:"anya@intrepidlondon.com",tags:["stylists","london"],notes:"",driveLink:""},
   {id:302,category:"agence_talent",nom:"37-2",email:"",tags:["photo","motion","stylists","set design","paris"],notes:"",driveLink:""},
@@ -656,68 +690,68 @@ let CONTACTS=[
   {id:325,category:"agence_talent",nom:"SECOND NAME",email:"",tags:["set design","stylists","photo","motion","london","nyc","paris"],notes:"",driveLink:""},
   {id:326,category:"agence_talent",nom:"Dobedo",email:"",tags:["photo","motion","artists","london","nyc"],notes:"",driveLink:""},
   {id:327,category:"agence_talent",nom:"TALENT AND PARTNER",email:"",tags:["photo","motion","stylists","paris"],notes:"Mostly still life",driveLink:""},
-  {id:401,category:"regie_tech",nom:"MATPHOTO",poste:"Location matériel",email:"info@matphoto.fr",telephone:"+33 1 43 47 55 22",tags:["camera eq","digital eq","light eq","paris"],notes:"Dans Paris",driveLink:""},
-  {id:402,category:"regie_tech",nom:"711 RENT",poste:"Location matériel",email:"",telephone:"",tags:["camera eq","light eq"],notes:"",driveLink:""},
-  {id:403,category:"regie_tech",nom:"DIRECT DIGITAL",poste:"Location matériel",email:"",telephone:"",tags:["digital eq"],notes:"",driveLink:""},
-  {id:404,category:"regie_tech",nom:"PROLIGHTING",poste:"Location lumière",email:"office@prolighting.paris",telephone:"",tags:["light eq"],notes:"",driveLink:""},
-  {id:405,category:"regie_tech",nom:"ANGIMAGE",poste:"Régie",email:"j.charles@angimage.com",telephone:"+33 9 82 46 28 46",tags:["régie"],notes:"",driveLink:""},
-  {id:406,category:"regie_tech",nom:"GLOBAL",poste:"Régie",email:"",telephone:"",tags:["régie"],notes:"",driveLink:""},
-  {id:407,category:"regie_tech",nom:"ARDENT",poste:"Régie Marseille",email:"contact@ardent-rent.com",telephone:"06 28 52 40 13",tags:["régie","marseille"],notes:"Former members of Global",driveLink:""},
-  {id:408,category:"regie_tech",nom:"RVZ",poste:"Régie / Light",email:"",telephone:"",tags:["régie","light eq"],notes:"Pas beaucoup d'éléments, pour dépanner",driveLink:""},
-  {id:409,category:"regie_tech",nom:"OPTIONS",poste:"Régie mobilier",email:"",telephone:"",tags:["régie"],notes:"Bancs, chaises, assises",driveLink:""},
-  {id:410,category:"regie_tech",nom:"CCL LIVE",poste:"Services techniques",email:"",telephone:"",tags:["électricité","lumière","son"],notes:"Electricity, light, sound installations",driveLink:""},
-  {id:411,category:"regie_tech",nom:"NOVELTY",poste:"Services techniques",email:"",telephone:"",tags:["lumière","son","électricité"],notes:"Light, sound, elec, all events services",driveLink:""},
-  {id:412,category:"regie_tech",nom:"ALEJANDRO GONZALES",poste:"Électricien",email:"",telephone:"",tags:["électricité"],notes:"",driveLink:""},
-  {id:413,category:"regie_tech",nom:"REMI PROCUREUR",poste:"Light Director",email:"",telephone:"",tags:["lumière","shows"],notes:"Light director on shows + photographe",driveLink:""},
-  {id:414,category:"regie_tech",nom:"KAMS",poste:"Van with driver",email:"manji@kamslocation.com",telephone:"06 07 38 92 63",tags:["van with driver","livraison"],notes:"Estimation sur site web puis email à Manji",driveLink:"https://kamstransport.com/"},
-  {id:415,category:"regie_tech",nom:"SUPERVAN",poste:"Van with driver",email:"",telephone:"",tags:["van with driver","livraison"],notes:"Commande sur site web. Seulement 7h-21h",driveLink:"https://web.supervan.fr/"},
-  {id:416,category:"regie_tech",nom:"H24 TRANSPORTS",poste:"Van with driver",email:"contact@h24transports.com",telephone:"01 80 27 54 60",tags:["van with driver","livraison"],notes:"",driveLink:"https://www.h24transports.com/"},
-  {id:417,category:"regie_tech",nom:"UCAR",poste:"Location véhicule",email:"vel@ucar.com",telephone:"",tags:["van rental","france"],notes:"Commande sur site web, dans toute la France",driveLink:"https://ucar.fr/"},
+  {id:401,category:"regie_tech",nom:"MATPHOTO",poste:"Equipment rental",email:"info@matphoto.fr",telephone:"+33 1 43 47 55 22",tags:["camera eq","digital eq","light eq","paris"],notes:"In Paris",driveLink:""},
+  {id:402,category:"regie_tech",nom:"711 RENT",poste:"Equipment rental",email:"",telephone:"",tags:["camera eq","light eq"],notes:"",driveLink:""},
+  {id:403,category:"regie_tech",nom:"DIRECT DIGITAL",poste:"Equipment rental",email:"",telephone:"",tags:["digital eq"],notes:"",driveLink:""},
+  {id:404,category:"regie_tech",nom:"PROLIGHTING",poste:"Lighting rental",email:"office@prolighting.paris",telephone:"",tags:["light eq"],notes:"",driveLink:""},
+  {id:405,category:"regie_tech",nom:"ANGIMAGE",poste:"Set support",email:"j.charles@angimage.com",telephone:"+33 9 82 46 28 46",tags:["set support"],notes:"",driveLink:""},
+  {id:406,category:"regie_tech",nom:"GLOBAL",poste:"Set support",email:"",telephone:"",tags:["set support"],notes:"",driveLink:""},
+  {id:407,category:"regie_tech",nom:"ARDENT",poste:"Set support (Marseille)",email:"contact@ardent-rent.com",telephone:"06 28 52 40 13",tags:["set support","marseille"],notes:"Former members of Global",driveLink:""},
+  {id:408,category:"regie_tech",nom:"RVZ",poste:"Set support / Light",email:"",telephone:"",tags:["set support","light eq"],notes:"Limited stock, good for backup",driveLink:""},
+  {id:409,category:"regie_tech",nom:"OPTIONS",poste:"Furniture set support",email:"",telephone:"",tags:["set support"],notes:"Benches, chairs, seating",driveLink:""},
+  {id:410,category:"regie_tech",nom:"CCL LIVE",poste:"Technical services",email:"",telephone:"",tags:["electricity","light","sound"],notes:"Electricity, light, sound installations",driveLink:""},
+  {id:411,category:"regie_tech",nom:"NOVELTY",poste:"Technical services",email:"",telephone:"",tags:["light","sound","electricity"],notes:"Light, sound, elec, all events services",driveLink:""},
+  {id:412,category:"regie_tech",nom:"ALEJANDRO GONZALES",poste:"Electrician",email:"",telephone:"",tags:["electricity"],notes:"",driveLink:""},
+  {id:413,category:"regie_tech",nom:"REMI PROCUREUR",poste:"Light Director",email:"",telephone:"",tags:["light","shows"],notes:"Light director on shows + photographer",driveLink:""},
+  {id:414,category:"regie_tech",nom:"KAMS",poste:"Van with driver",email:"manji@kamslocation.com",telephone:"06 07 38 92 63",tags:["van with driver","delivery"],notes:"Quote via website then email Manji",driveLink:"https://kamstransport.com/"},
+  {id:415,category:"regie_tech",nom:"SUPERVAN",poste:"Van with driver",email:"",telephone:"",tags:["van with driver","delivery"],notes:"Order via website. 7am-9pm only",driveLink:"https://web.supervan.fr/"},
+  {id:416,category:"regie_tech",nom:"H24 TRANSPORTS",poste:"Van with driver",email:"contact@h24transports.com",telephone:"01 80 27 54 60",tags:["van with driver","delivery"],notes:"",driveLink:"https://www.h24transports.com/"},
+  {id:417,category:"regie_tech",nom:"UCAR",poste:"Vehicle rental",email:"vel@ucar.com",telephone:"",tags:["van rental","france"],notes:"Order via website, all over France",driveLink:"https://ucar.fr/"},
   {id:418,category:"regie_tech",nom:"WHERE THE ACTION IS",poste:"Team transit",email:"olivier@wheretheactionis.fr",telephone:"",tags:["van rental","team transit"],notes:"",driveLink:""},
-  {id:419,category:"regie_tech",nom:"STARDRIVE",poste:"Greeter / Taxi",email:"contact@stardrive.fr",telephone:"+33 7 63 51 13 13",tags:["taxi","greeter"],notes:"Greeter service. Pour bagages lourds en voyage.",driveLink:""},
+  {id:419,category:"regie_tech",nom:"STARDRIVE",poste:"Greeter / Taxi",email:"contact@stardrive.fr",telephone:"+33 7 63 51 13 13",tags:["taxi","greeter"],notes:"Greeter service. For heavy luggage while travelling.",driveLink:""},
   {id:420,category:"regie_tech",nom:"G7",poste:"Taxi",email:"",telephone:"",tags:["taxi"],notes:"",driveLink:""},
   {id:421,category:"regie_tech",nom:"SAMWAY TRAVEL",poste:"Van with driver",email:"sami@samway-travel.com",telephone:"",tags:["van with driver","team transit"],notes:"",driveLink:""},
-  {id:422,category:"regie_tech",nom:"T4X",poste:"Travel booking",email:"prodeskpar@t4ex.com",telephone:"",tags:["avion","train","travel booking"],notes:"",driveLink:""},
-  {id:501,category:"flowers",nom:"Maison Vertumne",poste:"Fleuriste",email:"contact@maison-vertumne.fr",telephone:"+33 1 42 86 06 76",tags:["bouquets","paris"],notes:"Cours d'art floral. Aussi compte mariage.",driveLink:"https://www.instagram.com/maisonvertumne_paris/"},
-  {id:502,category:"flowers",nom:"Debeaulieu Fleurs",poste:"Fleuriste",email:"order@debeaulieu-paris.com",telephone:"+33 1 45 26 78 68",tags:["bouquets","paris"],notes:"Reco Zoé",driveLink:"https://www.instagram.com/debeaulieuparis/"},
-  {id:503,category:"flowers",nom:"Debeaulieu Objets",poste:"Location objets",email:"store@debeaulieu-paris.com",telephone:"+33 1 42 82 71 93",tags:["objets","paris"],notes:"Reco Zoé / not just flowers",driveLink:"https://www.instagram.com/debeaulieuparis/"},
-  {id:504,category:"flowers",nom:"Castor",poste:"Fleuriste / Vases",email:"contact@castor-fleuriste.com",telephone:"+33 1 40 56 34 68",tags:["bouquets","paris"],notes:"Vente de vases stylés",driveLink:"https://www.instagram.com/castorfleuriste/"},
-  {id:505,category:"flowers",nom:"Anne Vitchen",poste:"Fleuriste",email:"quentin@annevitchen.com",telephone:"+33 6 37 44 82 30",tags:["bouquets","paris"],notes:"Amie de Zoé / c/o Quentin Rigole",driveLink:"https://www.instagram.com/anne.vitchen/"},
-  {id:506,category:"flowers",nom:"La Rose D'Ispahan",poste:"Fleuriste",email:"larosedispahan170@gmail.com",telephone:"+33 7 86 97 98 98",tags:["bouquets","paris"],notes:"120€ pour 3 bouquets de pivoine. Contact: Myriam",driveLink:"https://www.instagram.com/la_rose_dispahan/",rating:3},
-  {id:507,category:"flowers",nom:"Muse",poste:"Fleuriste",email:"musemontmartre@gmail.com",telephone:"+33 1 46 06 52 49",tags:["bouquets","paris"],notes:"Contact: Majid +33 6 84 56 80 70",driveLink:"https://www.instagram.com/musemontmartre/",rating:2},
-  {id:508,category:"flowers",nom:"SAISON",poste:"Fleuriste",email:"",telephone:"01 48 05 77 68",tags:["bouquets","paris"],notes:"",driveLink:""},
-  {id:509,category:"flowers",nom:"Rosa Cadaqués",poste:"Fleurs séchées",email:"contact@rosacadaques.com",telephone:"+33 4 68 92 06 56",tags:["bouquets séchés","perpignan"],notes:"Livraison partout en Europe. Contact: Mégan Cano",driveLink:"https://www.instagram.com/rosacadaques/"},
-  {id:510,category:"flowers",nom:"BLUMEN",poste:"Set design floral",email:"",telephone:"",tags:["set design","paris"],notes:"Fleurs locales et de saison. Créations en céramique.",driveLink:"https://www.instagram.com/blumen_paris/"},
-  {id:511,category:"flowers",nom:"Nebbia — Justine Beaussart",poste:"Set design floral",email:"nebbia@nebbiastudio.com",telephone:"",tags:["set design","floral","paris"],notes:"Compositrice de bouquet / Studio de création florale",driveLink:"https://www.instagram.com/nebbiastudio/"},
+  {id:422,category:"regie_tech",nom:"T4X",poste:"Travel booking",email:"prodeskpar@t4ex.com",telephone:"",tags:["plane","train","travel booking"],notes:"",driveLink:""},
+  {id:501,category:"flowers",nom:"Maison Vertumne",poste:"Florist",email:"contact@maison-vertumne.fr",telephone:"+33 1 42 86 06 76",tags:["bouquets","paris"],notes:"Floral art classes. Also does weddings.",driveLink:"https://www.instagram.com/maisonvertumne_paris/"},
+  {id:502,category:"flowers",nom:"Debeaulieu Fleurs",poste:"Florist",email:"order@debeaulieu-paris.com",telephone:"+33 1 45 26 78 68",tags:["bouquets","paris"],notes:"Reco Zoé",driveLink:"https://www.instagram.com/debeaulieuparis/"},
+  {id:503,category:"flowers",nom:"Debeaulieu Objets",poste:"Prop rental",email:"store@debeaulieu-paris.com",telephone:"+33 1 42 82 71 93",tags:["props","paris"],notes:"Reco Zoé / not just flowers",driveLink:"https://www.instagram.com/debeaulieuparis/"},
+  {id:504,category:"flowers",nom:"Castor",poste:"Florist / Vases",email:"contact@castor-fleuriste.com",telephone:"+33 1 40 56 34 68",tags:["bouquets","paris"],notes:"Sells stylish vases",driveLink:"https://www.instagram.com/castorfleuriste/"},
+  {id:505,category:"flowers",nom:"Anne Vitchen",poste:"Florist",email:"quentin@annevitchen.com",telephone:"+33 6 37 44 82 30",tags:["bouquets","paris"],notes:"Friend of Zoé / c/o Quentin Rigole",driveLink:"https://www.instagram.com/anne.vitchen/"},
+  {id:506,category:"flowers",nom:"La Rose D'Ispahan",poste:"Florist",email:"larosedispahan170@gmail.com",telephone:"+33 7 86 97 98 98",tags:["bouquets","paris"],notes:"€120 for 3 peony bouquets. Contact: Myriam",driveLink:"https://www.instagram.com/la_rose_dispahan/",rating:3},
+  {id:507,category:"flowers",nom:"Muse",poste:"Florist",email:"musemontmartre@gmail.com",telephone:"+33 1 46 06 52 49",tags:["bouquets","paris"],notes:"Contact: Majid +33 6 84 56 80 70",driveLink:"https://www.instagram.com/musemontmartre/",rating:2},
+  {id:508,category:"flowers",nom:"SAISON",poste:"Florist",email:"",telephone:"01 48 05 77 68",tags:["bouquets","paris"],notes:"",driveLink:""},
+  {id:509,category:"flowers",nom:"Rosa Cadaqués",poste:"Dried flowers",email:"contact@rosacadaques.com",telephone:"+33 4 68 92 06 56",tags:["dried bouquets","perpignan"],notes:"Delivery all over Europe. Contact: Mégan Cano",driveLink:"https://www.instagram.com/rosacadaques/"},
+  {id:510,category:"flowers",nom:"BLUMEN",poste:"Set design floral",email:"",telephone:"",tags:["set design","paris"],notes:"Local, seasonal flowers. Ceramic creations.",driveLink:"https://www.instagram.com/blumen_paris/"},
+  {id:511,category:"flowers",nom:"Nebbia — Justine Beaussart",poste:"Set design floral",email:"nebbia@nebbiastudio.com",telephone:"",tags:["set design","floral","paris"],notes:"Bouquet designer / Floral design studio",driveLink:"https://www.instagram.com/nebbiastudio/"},
   {id:512,category:"flowers",nom:"Garance du Nord",poste:"Set design floral",email:"",telephone:"",tags:["set design","floral"],notes:"Via 37-2",driveLink:""},
   {id:513,category:"flowers",nom:"DOAN LY",poste:"Set design floral",email:"",telephone:"",tags:["set design","floral"],notes:"Via 37-2",driveLink:""},
-  {id:514,category:"flowers",nom:"Sessile",poste:"Plateforme fleuriste",email:"",telephone:"",tags:["set design","conseils"],notes:"Plateforme regroupant toute sorte de fleuristes",driveLink:"https://www.instagram.com/sessile_fleurs/"},
-  {id:515,category:"flowers",nom:"DEFRISE",poste:"Location vases/objets",email:"",telephone:"01 43 79 78 29",tags:["objets","vases","paris"],notes:"Vases, location objets",driveLink:"https://defrise.paris/"},
-  {id:516,category:"flowers",nom:"SOUBRIER",poste:"Location vases/objets",email:"",telephone:"01 43 72 93 71",tags:["objets","vases","paris"],notes:"Vases, location objets",driveLink:"https://www.soubrier.com/"},
-  {id:517,category:"flowers",nom:"XXO",poste:"Location objets/meubles",email:"veronique@xxo.com",telephone:"01 48 18 08 88",tags:["objets","meubles","banlieue"],notes:"Contact: Veronique Mendy",driveLink:"https://www.xxo.com/"},
-  {id:518,category:"flowers",nom:"OPTIONS",poste:"Location vaisselle",email:"",telephone:"",tags:["vaisselle","mobilier"],notes:"Vaisselle, mobilier de réception",driveLink:""},
-  {id:601,category:"catering",nom:"Joāo Lourenço",poste:"Traiteur",email:"jplrodrigues@gmail.com",telephone:"+33 7 67 69 43 13",tags:["buffet","lunch box","paris"],notes:"Buffets et bentos. 25€/pers avec dessert",driveLink:"http://www.joaolourenco.fr/"},
-  {id:602,category:"catering",nom:"June & Jess",poste:"Traiteur",email:"Juneandjessadm@gmail.com",telephone:"",tags:["lunch box","editorial","paris"],notes:"Très bon mais présentation pas la meilleure",driveLink:"https://www.instagram.com/june.and.jess/"},
-  {id:603,category:"catering",nom:"INÉ",poste:"Traiteur",email:"",telephone:"",tags:["lunch box","editorial","paris"],notes:"18€ plat / 23€ E+P / 28€ E+P+D",driveLink:"",rating:3},
-  {id:604,category:"catering",nom:"KEILI",poste:"Traiteur",email:"",telephone:"",tags:["lunch box","paris"],notes:"Can do lunch boxes that keep for the next day",driveLink:"",rating:3},
-  {id:605,category:"catering",nom:"HVEGAN BENTO",poste:"Traiteur",email:"",telephone:"",tags:["buffet","lunch box","paris"],notes:"Très bon mais ne varie pas ses menus",driveLink:""},
-  {id:606,category:"catering",nom:"CHICKEN BACON LETTUCE",poste:"Traiteur",email:"",telephone:"",tags:["buffet","lunch box","paris"],notes:"",driveLink:""},
-  {id:607,category:"catering",nom:"BEIRUT BAKERY",poste:"Traiteur",email:"",telephone:"",tags:["buffet","lunch box","paris"],notes:"30€ entrée/plat/dessert",driveLink:""},
-  {id:608,category:"catering",nom:"BOB'S CATERING",poste:"Traiteur",email:"",telephone:"",tags:["lunch box","shows","paris"],notes:"",driveLink:""},
-  {id:609,category:"catering",nom:"ONIGIRIZ",poste:"Traiteur",email:"",telephone:"",tags:["shows","paris"],notes:"",driveLink:"",rating:3},
-  {id:610,category:"catering",nom:"LE FAVORI",poste:"Traiteur",email:"",telephone:"",tags:["lunch box","editorial","paris"],notes:"Sandwich + salades. 10-12€ sandwich",driveLink:""},
-  {id:611,category:"catering",nom:"EN CHEMIN",poste:"Traiteur",email:"",telephone:"",tags:["lunch box","paris"],notes:"Attention, portions petites, prévoir E+P+D",driveLink:"",rating:2},
-  {id:612,category:"catering",nom:"DE CHEZ NOUS",poste:"Traiteur",email:"",telephone:"",tags:["shows","paris"],notes:"",driveLink:"",rating:2},
-  {id:613,category:"catering",nom:"SO NAT",poste:"Traiteur",email:"",telephone:"",tags:["lunch box","végétarien","paris"],notes:"",driveLink:""},
-  {id:614,category:"catering",nom:"ROSE BAKERY",poste:"Traiteur",email:"",telephone:"",tags:["lunch box","paris"],notes:"",driveLink:""},
-  {id:615,category:"catering",nom:"FILON",poste:"Traiteur",email:"",telephone:"",tags:["lunch box","paris"],notes:"",driveLink:""},
-  {id:616,category:"catering",nom:"VIF",poste:"Traiteur",email:"contact@vif.paris",telephone:"",tags:["paris"],notes:"À tester",driveLink:""},
-  {id:617,category:"catering",nom:"MIF CATERING",poste:"Traiteur",email:"",telephone:"",tags:[],notes:"ASK MARCEAU",driveLink:""},
-  {id:618,category:"catering",nom:"Piatto cuisine",poste:"Traiteur",email:"",telephone:"",tags:["paris"],notes:"À tester",driveLink:"https://www.instagram.com/piattocuisine/"},
-  {id:701,category:"hotels",nom:"EXPERIMENTAL GROUP",poste:"Groupe hôtelier",email:"",telephone:"",tags:["hôtel"],notes:"",driveLink:""},
-  {id:702,category:"hotels",nom:"STARDRIVE",poste:"Greeter service",email:"contact@stardrive.fr",telephone:"+33 7 63 51 13 13",tags:["greeter","travel"],notes:"Pour bagages lourds en voyage",driveLink:""},
+  {id:514,category:"flowers",nom:"Sessile",poste:"Florist platform",email:"",telephone:"",tags:["set design","advice"],notes:"Platform gathering all kinds of florists",driveLink:"https://www.instagram.com/sessile_fleurs/"},
+  {id:515,category:"flowers",nom:"DEFRISE",poste:"Vase/prop rental",email:"",telephone:"01 43 79 78 29",tags:["props","vases","paris"],notes:"Vases, prop rental",driveLink:"https://defrise.paris/"},
+  {id:516,category:"flowers",nom:"SOUBRIER",poste:"Vase/prop rental",email:"",telephone:"01 43 72 93 71",tags:["props","vases","paris"],notes:"Vases, prop rental",driveLink:"https://www.soubrier.com/"},
+  {id:517,category:"flowers",nom:"XXO",poste:"Prop/furniture rental",email:"veronique@xxo.com",telephone:"01 48 18 08 88",tags:["props","furniture","suburbs"],notes:"Contact: Veronique Mendy",driveLink:"https://www.xxo.com/"},
+  {id:518,category:"flowers",nom:"OPTIONS",poste:"Tableware rental",email:"",telephone:"",tags:["tableware","furniture"],notes:"Tableware, event furniture",driveLink:""},
+  {id:601,category:"catering",nom:"Joāo Lourenço",poste:"Caterer",email:"jplrodrigues@gmail.com",telephone:"+33 7 67 69 43 13",tags:["buffet","lunch box","paris"],notes:"Buffets and bento boxes. €25/person with dessert",driveLink:"http://www.joaolourenco.fr/"},
+  {id:602,category:"catering",nom:"June & Jess",poste:"Caterer",email:"Juneandjessadm@gmail.com",telephone:"",tags:["lunch box","editorial","paris"],notes:"Very good but presentation isn't the best",driveLink:"https://www.instagram.com/june.and.jess/"},
+  {id:603,category:"catering",nom:"INÉ",poste:"Caterer",email:"",telephone:"",tags:["lunch box","editorial","paris"],notes:"€18 main / €23 starter+main / €28 starter+main+dessert",driveLink:"",rating:3},
+  {id:604,category:"catering",nom:"KEILI",poste:"Caterer",email:"",telephone:"",tags:["lunch box","paris"],notes:"Can do lunch boxes that keep for the next day",driveLink:"",rating:3},
+  {id:605,category:"catering",nom:"HVEGAN BENTO",poste:"Caterer",email:"",telephone:"",tags:["buffet","lunch box","paris"],notes:"Very good but doesn't vary the menu",driveLink:""},
+  {id:606,category:"catering",nom:"CHICKEN BACON LETTUCE",poste:"Caterer",email:"",telephone:"",tags:["buffet","lunch box","paris"],notes:"",driveLink:""},
+  {id:607,category:"catering",nom:"BEIRUT BAKERY",poste:"Caterer",email:"",telephone:"",tags:["buffet","lunch box","paris"],notes:"€30 starter/main/dessert",driveLink:""},
+  {id:608,category:"catering",nom:"BOB'S CATERING",poste:"Caterer",email:"",telephone:"",tags:["lunch box","shows","paris"],notes:"",driveLink:""},
+  {id:609,category:"catering",nom:"ONIGIRIZ",poste:"Caterer",email:"",telephone:"",tags:["shows","paris"],notes:"",driveLink:"",rating:3},
+  {id:610,category:"catering",nom:"LE FAVORI",poste:"Caterer",email:"",telephone:"",tags:["lunch box","editorial","paris"],notes:"Sandwiches + salads. €10-12 per sandwich",driveLink:""},
+  {id:611,category:"catering",nom:"EN CHEMIN",poste:"Caterer",email:"",telephone:"",tags:["lunch box","paris"],notes:"Careful, small portions, plan for starter+main+dessert",driveLink:"",rating:2},
+  {id:612,category:"catering",nom:"DE CHEZ NOUS",poste:"Caterer",email:"",telephone:"",tags:["shows","paris"],notes:"",driveLink:"",rating:2},
+  {id:613,category:"catering",nom:"SO NAT",poste:"Caterer",email:"",telephone:"",tags:["lunch box","vegetarian","paris"],notes:"",driveLink:""},
+  {id:614,category:"catering",nom:"ROSE BAKERY",poste:"Caterer",email:"",telephone:"",tags:["lunch box","paris"],notes:"",driveLink:""},
+  {id:615,category:"catering",nom:"FILON",poste:"Caterer",email:"",telephone:"",tags:["lunch box","paris"],notes:"",driveLink:""},
+  {id:616,category:"catering",nom:"VIF",poste:"Caterer",email:"contact@vif.paris",telephone:"",tags:["paris"],notes:"Worth testing",driveLink:""},
+  {id:617,category:"catering",nom:"MIF CATERING",poste:"Caterer",email:"",telephone:"",tags:[],notes:"ASK MARCEAU",driveLink:""},
+  {id:618,category:"catering",nom:"Piatto cuisine",poste:"Caterer",email:"",telephone:"",tags:["paris"],notes:"Worth testing",driveLink:"https://www.instagram.com/piattocuisine/"},
+  {id:701,category:"hotels",nom:"EXPERIMENTAL GROUP",poste:"Hotel group",email:"",telephone:"",tags:["hotel"],notes:"",driveLink:""},
+  {id:702,category:"hotels",nom:"STARDRIVE",poste:"Greeter service",email:"contact@stardrive.fr",telephone:"+33 7 63 51 13 13",tags:["greeter","travel"],notes:"For heavy luggage while travelling",driveLink:""},
   {id:801,category:"models",nom:"Fia Ljungstrom",email:"fialjungstrrm@gmail.com",telephone:"+46 70-482 41 79",tags:[],notes:"",driveLink:"https://www.metromodels.com/fr/metro/127-fia-ljungstrom/"},
-  {id:802,category:"models",nom:"Léa Nicolas",email:"",telephone:"06 70 24 73 81",tags:[],notes:"T.179 / P.80 / T.61 / H.89 / Pt.38 / Cheveux brown / Yeux blue",driveLink:"https://www.instagram.com/leani2/"},
+  {id:802,category:"models",nom:"Léa Nicolas",email:"",telephone:"06 70 24 73 81",tags:[],notes:"H.179 / B.80 / W.61 / Hips.89 / Size 38 / Brown hair / Blue eyes",driveLink:"https://www.instagram.com/leani2/"},
   {id:803,category:"models",nom:"Meryem C",email:"",telephone:"",tags:["mellerio deck"],notes:"MELLERIO DECK",driveLink:""},
   {id:804,category:"models",nom:"Léa C",email:"",telephone:"",tags:["mellerio deck"],notes:"MELLERIO DECK",driveLink:""},
   {id:805,category:"models",nom:"Marie R",email:"",telephone:"",tags:["mellerio deck"],notes:"MELLERIO DECK",driveLink:""},
@@ -732,13 +766,13 @@ let CONTACTS=[
   {id:907,category:"photographers",nom:"Camilla Armbrust",email:"info@camillaarmbrust.com",agence:"JONES + SHOTVIEW",tags:["fashion","beauty"],notes:"",driveLink:"https://www.instagram.com/camillaarmbrust"},
   {id:908,category:"photographers",nom:"Camille Summers-Valli",email:"studio@camillesummersvalli.com",agence:"PARENT GLOBAL",tags:["beauty","fashion"],notes:"",driveLink:"https://www.instagram.com/camille.summersvalli"},
   {id:909,category:"photographers",nom:"Valentin Herfray",email:"herfraygroup@gmail.com",agence:"MAWORLDGROUP",tags:["fashion"],notes:"",driveLink:"https://www.instagram.com/valentinherfray"},
-  {id:910,category:"photographers",nom:"Pascal Gambarte",email:"mail@pascalgambarte.com",telephone:"+49 170 189 89 25",agence:"Non représenté",tags:["fashion"],notes:"",driveLink:"https://www.instagram.com/pascalgambarte"},
+  {id:910,category:"photographers",nom:"Pascal Gambarte",email:"mail@pascalgambarte.com",telephone:"+49 170 189 89 25",agence:"Not represented",tags:["fashion"],notes:"",driveLink:"https://www.instagram.com/pascalgambarte"},
   {id:911,category:"photographers",nom:"Paul Rousteau",email:"studio@paulrousteau.com",telephone:"+33 6 50 74 15 54",agence:"Rose Paris",tags:["still life","fashion"],notes:"",driveLink:"https://www.instagram.com/paul_rousteau"},
   {id:912,category:"photographers",nom:"Hugo Fazi",email:"enquiries@hugofazi.com",telephone:"+33 7 86 60 05 66",agence:"",tags:[],notes:"",driveLink:"https://www.instagram.com/hugifazu"},
   {id:913,category:"photographers",nom:"Denis Boulze",email:"denisboulze@gmail.com",telephone:"+33 6 74 71 09 15",agence:"",tags:["fashion","still life"],notes:"",driveLink:"https://www.instagram.com/denis.boulze"},
   {id:914,category:"photographers",nom:"Camille Vivier",email:"camille.vivier@gmail.com",agence:"CONCRETE REP",tags:["fashion"],notes:"Agent +44 207 683 13 66",driveLink:"https://www.instagram.com/camille_vivier"},
   {id:915,category:"photographers",nom:"Jules Faure",email:"contact.julesfaure@gmail.com",telephone:"+33 6 42 41 62 14",agence:"",tags:["fashion"],notes:"",driveLink:"https://www.instagram.com/julesfaure"},
-  {id:916,category:"photographers",nom:"Harley Weir",email:"→ demander à Ludovic",agence:"ART PARTNER",tags:["fashion"],notes:"",driveLink:"https://www.instagram.com/harleyweir"},
+  {id:916,category:"photographers",nom:"Harley Weir",email:"→ ask Ludovic",agence:"ART PARTNER",tags:["fashion"],notes:"",driveLink:"https://www.instagram.com/harleyweir"},
   {id:917,category:"photographers",nom:"Nadine Ijewere",email:"",agence:"CLM Agency",tags:["beauty","fashion"],notes:"",driveLink:"https://www.instagram.com/nadineijewere"},
   {id:918,category:"photographers",nom:"Joshua Woods",email:"info@joshuawoodsphotography.com",agence:"",tags:[],notes:"",driveLink:"https://www.instagram.com/joshuawoods"},
   {id:919,category:"photographers",nom:"Reto Schmid",email:"info@retoschmid.studio",telephone:"+33 7 81 64 92 69",agence:"ARTISTRY LONDON",tags:["fashion","beauty"],notes:"",driveLink:""},
@@ -800,6 +834,37 @@ function buildContactNav(){
   }).join("");
 }
 
+/* ══ NEW CONTACT CATEGORY ══ */
+const CATEGORY_COLOR_PALETTE=["#007aff","#5856d6","#34c759","#ff9500","#ff2d55","#30b0c7","#af52de","#ff3b30","#636366","#ff9f0a","#00c7be","#a2845e"];
+let newCategoryColor=CATEGORY_COLOR_PALETTE[0];
+function openNewCategoryModal(){
+  newCategoryColor=CATEGORY_COLOR_PALETTE[0];
+  document.getElementById("new-cat-icon").value="";
+  document.getElementById("new-cat-name").value="";
+  document.getElementById("new-cat-colors").innerHTML=CATEGORY_COLOR_PALETTE.map((c,i)=>
+    `<div class="cat-color-swatch${i===0?" sel":""}" style="background:${c}" onclick="pickCategoryColor(this,'${c}')"></div>`
+  ).join("");
+  document.getElementById("newcategory-overlay").classList.add("open");
+  setTimeout(()=>document.getElementById("new-cat-name").focus(),250);
+}
+function pickCategoryColor(el,color){
+  newCategoryColor=color;
+  document.querySelectorAll(".cat-color-swatch").forEach(s=>s.classList.remove("sel"));
+  el.classList.add("sel");
+}
+function closeNewCategoryModal(){document.getElementById("newcategory-overlay").classList.remove("open");}
+function handleNewCategoryOverlay(e){if(e.target===document.getElementById("newcategory-overlay"))closeNewCategoryModal();}
+function createCategory(){
+  const name=document.getElementById("new-cat-name").value.trim();
+  if(!name){alert("Give the category a name first.");return;}
+  const icon=document.getElementById("new-cat-icon").value.trim()||"📁";
+  const id="cat_"+Date.now();
+  CATS.push({id,label:name,icon,color:newCategoryColor});
+  closeNewCategoryModal();
+  buildContactNav();
+  renderContacts();
+}
+
 function setContactFilter(id){
   contactFilterCat=id;
   document.querySelectorAll("#nav-contacts .nav-item").forEach(el=>el.classList.remove("active"));
@@ -824,8 +889,8 @@ function contactCardHTML(c){
         ${sub?`<div class="card-sub">${sub}</div>`:""}
       </div>
       <div class="card-actions">
-        <button class="btn-icon" onclick="openContactModal(${c.id})" title="Modifier">✎</button>
-        <button class="btn-icon del" onclick="delContact(${c.id})" title="Supprimer">✕</button>
+        <button class="btn-icon" onclick="openContactModal(${c.id})" title="Edit">✎</button>
+        <button class="btn-icon del" onclick="delContact(${c.id})" title="Delete">✕</button>
       </div>
     </div>
     <div class="card-info">
@@ -843,7 +908,7 @@ function renderContacts(){
   document.getElementById("count-badge").textContent=`${filtered.length} contact${filtered.length!==1?"s":""}`;
   const allTags=[...new Set(CONTACTS.flatMap(c=>c.tags||[]))].sort();
   const curTag=document.getElementById("tag-select").value;
-  document.getElementById("tag-select").innerHTML=`<option value="">Tous les tags</option>`+allTags.map(t=>`<option value="${t}"${t===curTag?" selected":""}>${t}</option>`).join("");
+  document.getElementById("tag-select").innerHTML=`<option value="">All tags</option>`+allTags.map(t=>`<option value="${t}"${t===curTag?" selected":""}>${t}</option>`).join("");
 
   const content=document.getElementById("page-contacts");
   if(contactFilterCat==="all"){
@@ -859,20 +924,20 @@ function renderContacts(){
         <div class="cards-grid">${items.map(contactCardHTML).join("")}</div>
       </div>`;
     }).join("");
-    content.innerHTML=sections||`<div class="empty">Aucun résultat</div>`;
+    content.innerHTML=sections||`<div class="empty">No results</div>`;
   }else{
     content.innerHTML=filtered.length
       ?`<div class="cards-grid">${filtered.map(contactCardHTML).join("")}</div>`
-      :`<div class="empty">Aucun résultat</div>`;
+      :`<div class="empty">No results</div>`;
   }
 }
 
-function delContact(id){if(confirm("Supprimer ce contact ?"))CONTACTS=CONTACTS.filter(c=>c.id!==id),renderContacts(),buildContactNav();}
+function delContact(id){if(confirm("Delete this contact?"))CONTACTS=CONTACTS.filter(c=>c.id!==id),renderContacts(),buildContactNav();}
 
 function openContactModal(id){
   editContactId=id;
   const c=id?CONTACTS.find(x=>x.id===id):null;
-  document.getElementById("contact-sheet-title").textContent=id?"Modifier le contact":"Nouveau contact";
+  document.getElementById("contact-sheet-title").textContent=id?"Edit contact":"New contact";
   document.getElementById("f-nom").value=c?.nom||"";
   document.getElementById("f-poste").value=c?.poste||"";
   document.getElementById("f-entreprise").value=c?.entreprise||"";
@@ -989,7 +1054,7 @@ let CALLSHEETS=[
     mapAddress:"Parking at Ul. Smolna 9, Warsaw",
     lat:52.2394,lon:21.0246,city:"Warsaw",logoDataUrl:null,streetViewDataUrl:null,
     sections:[
-      {name:"RIMOWA",rows:[
+      {name:"RIMOWA",agencyLabel:"",rows:[
         {pos:"Head Of Creative",name:"Irma Kubisty",call:"02:00",contact:"c/o",contactVal:""},
         {pos:"Digital Project Manager",name:"Giorgia Pegaroro",call:"02:00",contact:"c/o",contactVal:""},
       ]},
@@ -1113,7 +1178,7 @@ function handleNewCsOverlay(e){if(e.target===document.getElementById("newcs-over
 function standardSectionsTemplate(){
   const blank=(pos)=>({pos,name:"",agency:"",call:"",contact:"raw",contactVal:""});
   return[
-    {name:"CLIENT",rows:[
+    {name:"CLIENT",agencyLabel:"",rows:[
       blank("Head Of Creative"),
       blank("Digital Project Manager"),
     ]},
@@ -1170,14 +1235,14 @@ function standardSectionsTemplate(){
       blank("VAN 2 Driver"),
       blank("VAN 3 Driver"),
     ]},
-    {name:"PRACTICAL INFO",rows:[
-      {pos:"Ambulance",name:"—",call:"—",contact:"raw",contactVal:"15"},
-      {pos:"Fire Brigade",name:"—",call:"—",contact:"raw",contactVal:"18"},
-      {pos:"Police",name:"—",call:"—",contact:"raw",contactVal:"17"},
-      {pos:"Pharmacy",name:"",call:"—",contact:"raw",contactVal:""},
-      {pos:"Hospital",name:"",call:"—",contact:"raw",contactVal:""},
-      {pos:"WiFi",name:"Network: … · Password: …",call:"—",contact:"raw",contactVal:"—"},
-      {pos:"Parking",name:"",call:"—",contact:"raw",contactVal:""},
+    {name:"PRACTICAL INFO",variant:"practical",rows:[
+      {pos:"Ambulance",name:"",call:"",contact:"raw",contactVal:"15"},
+      {pos:"Fire Brigade",name:"",call:"",contact:"raw",contactVal:"18"},
+      {pos:"Police",name:"",call:"",contact:"raw",contactVal:"17"},
+      {pos:"Pharmacy",name:"",call:"",contact:"raw",contactVal:""},
+      {pos:"Hospital",name:"",call:"",contact:"raw",contactVal:""},
+      {pos:"WiFi",name:"Network: … · Password: …",call:"",contact:"raw",contactVal:"—"},
+      {pos:"Parking",name:"",call:"",contact:"raw",contactVal:""},
     ]},
   ];
 }
@@ -1238,7 +1303,26 @@ function rowHTML(r){
   </tr>`;
 }
 
+/* PRACTICAL INFO uses a different, simpler set of columns: Role / Address /
+   Distance / Contact — no Name or Agency, since these rows are services
+   (pharmacy, hospital, WiFi…) rather than people. */
+function practicalRowHTML(r){
+  const contactHTML=r.contactVal||"—";
+  return`<tr>
+    <td class="pos" contenteditable data-placeholder="Role">${r.pos||""}</td>
+    <td class="name" contenteditable data-placeholder="Address" colspan="2">${r.name||""}</td>
+    <td class="call" contenteditable data-placeholder="Distance / time">${r.call||"—"}</td>
+    <td class="contact" contenteditable data-placeholder="Phone">${contactHTML}</td>
+    <td class="actions-cell" data-noprint>
+      <button class="mini-btn" onclick="moveCsRow(this,-1)" title="Move up">▲</button>
+      <button class="mini-btn" onclick="moveCsRow(this,1)" title="Move down">▼</button>
+      <button class="mini-btn del-btn" onclick="delCsRow(this)" title="Delete">✕</button>
+    </td>
+  </tr>`;
+}
+
 function sectionHTML(s){
+  if(s.variant==="practical")return practicalSectionHTML(s);
   return`<div class="cs-section-block">
     <div class="section-header-row" onclick="toggleCsSection(this)">
       <span class="section-name" contenteditable onclick="event.stopPropagation()">${s.name}</span>
@@ -1246,15 +1330,39 @@ function sectionHTML(s){
         <span class="section-count-badge">${s.rows.length}</span>
         <button class="mini-btn" data-noprint onclick="event.stopPropagation();moveCsSection(this,-1)" title="Move section up">▲</button>
         <button class="mini-btn" data-noprint onclick="event.stopPropagation();moveCsSection(this,1)" title="Move section down">▼</button>
+        <button class="mini-btn del-btn" data-noprint onclick="event.stopPropagation();delCsSection(this)" title="Delete section">✕</button>
         <span class="section-toggle open">›</span>
       </div>
     </div>
     <div class="section-body">
       <table class="cs-table">
         <colgroup><col class="col-pos"><col class="col-name"><col class="col-agency"><col class="col-call"><col class="col-contact"><col class="col-del"></colgroup>
-        <thead><tr><th>Role</th><th>Name</th><th>Agency</th><th>Call Time</th><th>Contact</th><th data-noprint></th></tr></thead>
+        <thead><tr><th>Role</th><th>Name</th><th class="agency-header" contenteditable onclick="event.stopPropagation()">${s.agencyLabel!==undefined?s.agencyLabel:"Agency"}</th><th>Call Time</th><th>Contact</th><th data-noprint></th></tr></thead>
         <tbody>${s.rows.map(rowHTML).join("")}</tbody>
         <tfoot class="add-row"><tr><td colspan="6"><button class="btn-add-row" onclick="addCsRow(this)">＋ Add</button></td></tr></tfoot>
+      </table>
+    </div>
+  </div>`;
+}
+
+function practicalSectionHTML(s){
+  return`<div class="cs-section-block" data-variant="practical">
+    <div class="section-header-row" onclick="toggleCsSection(this)">
+      <span class="section-name" contenteditable onclick="event.stopPropagation()">${s.name}</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="section-count-badge">${s.rows.length}</span>
+        <button class="mini-btn" data-noprint onclick="event.stopPropagation();moveCsSection(this,-1)" title="Move section up">▲</button>
+        <button class="mini-btn" data-noprint onclick="event.stopPropagation();moveCsSection(this,1)" title="Move section down">▼</button>
+        <button class="mini-btn del-btn" data-noprint onclick="event.stopPropagation();delCsSection(this)" title="Delete section">✕</button>
+        <span class="section-toggle open">›</span>
+      </div>
+    </div>
+    <div class="section-body">
+      <table class="cs-table">
+        <colgroup><col class="col-pos"><col class="col-name"><col class="col-agency"><col class="col-call"><col class="col-contact"><col class="col-del"></colgroup>
+        <thead><tr><th>Role</th><th colspan="2">Address</th><th>Distance</th><th>Contact</th><th data-noprint></th></tr></thead>
+        <tbody>${s.rows.map(practicalRowHTML).join("")}</tbody>
+        <tfoot class="add-row"><tr><td colspan="5"><button class="btn-add-row" onclick="addCsRow(this)">＋ Add</button></td></tr></tfoot>
       </table>
     </div>
   </div>`;
@@ -1577,9 +1685,20 @@ function toggleCsSection(header){
 }
 
 function addCsRow(btn){
+  const section=btn.closest(".cs-section-block");
+  const isPractical=section.dataset.variant==="practical";
   const tbody=btn.closest("table").querySelector("tbody");
   const tr=document.createElement("tr");
-  tr.innerHTML=`
+  tr.innerHTML=isPractical?`
+    <td class="pos" contenteditable data-placeholder="Role"></td>
+    <td class="name" contenteditable data-placeholder="Address" colspan="2"></td>
+    <td class="call" contenteditable data-placeholder="Distance / time">—</td>
+    <td class="contact" contenteditable data-placeholder="Phone">—</td>
+    <td class="actions-cell" data-noprint>
+      <button class="mini-btn" onclick="moveCsRow(this,-1)" title="Move up">▲</button>
+      <button class="mini-btn" onclick="moveCsRow(this,1)" title="Move down">▼</button>
+      <button class="mini-btn del-btn" onclick="delCsRow(this)" title="Delete">✕</button>
+    </td>`:`
     <td class="pos" contenteditable data-placeholder="Role"></td>
     <td class="name" contenteditable data-placeholder="Full name"></td>
     <td class="agency" contenteditable data-placeholder="—"></td>
@@ -1592,7 +1711,7 @@ function addCsRow(btn){
     </td>`;
   tbody.appendChild(tr);
   tr.querySelector("[contenteditable]").focus();
-  updateCsSectionCount(btn.closest(".cs-section-block"));
+  updateCsSectionCount(section);
 }
 function delCsRow(btn){
   const row=btn.closest("tr");const section=row.closest(".cs-section-block");
@@ -1618,6 +1737,14 @@ function moveCsSection(btn,dir){
   if(!sibling)return;
   block.parentNode.insertBefore(dir<0?block:sibling,dir<0?sibling:block);
 }
+function delCsSection(btn){
+  const block=btn.closest(".cs-section-block");
+  const name=block.querySelector(".section-name").textContent.trim()||"this section";
+  if(confirm(`Delete the "${name}" section and all its rows?`)){
+    block.remove();
+    saveCurrentCsFromDom();
+  }
+}
 
 function openNewSectionModal(){document.getElementById("newsection-overlay").classList.add("open");setTimeout(()=>document.getElementById("new-section-name").focus(),250);}
 function closeNewSectionModal(){document.getElementById("newsection-overlay").classList.remove("open");document.getElementById("new-section-name").value="";}
@@ -1634,13 +1761,14 @@ function createSection(){
         <span class="section-count-badge">0</span>
         <button class="mini-btn" data-noprint onclick="event.stopPropagation();moveCsSection(this,-1)" title="Move section up">▲</button>
         <button class="mini-btn" data-noprint onclick="event.stopPropagation();moveCsSection(this,1)" title="Move section down">▼</button>
+        <button class="mini-btn del-btn" data-noprint onclick="event.stopPropagation();delCsSection(this)" title="Delete section">✕</button>
         <span class="section-toggle open">›</span>
       </div>
     </div>
     <div class="section-body">
       <table class="cs-table">
         <colgroup><col class="col-pos"><col class="col-name"><col class="col-agency"><col class="col-call"><col class="col-contact"><col class="col-del"></colgroup>
-        <thead><tr><th>Role</th><th>Name</th><th>Agency</th><th>Call Time</th><th>Contact</th><th data-noprint></th></tr></thead>
+        <thead><tr><th>Role</th><th>Name</th><th class="agency-header" contenteditable onclick="event.stopPropagation()">Agency</th><th>Call Time</th><th>Contact</th><th data-noprint></th></tr></thead>
         <tbody></tbody>
         <tfoot class="add-row"><tr><td colspan="6"><button class="btn-add-row" onclick="addCsRow(this)">＋ Add</button></td></tr></tfoot>
       </table>
@@ -1670,8 +1798,18 @@ function saveCurrentCsFromDom(){
 
   cs.sections=[...root.querySelectorAll(".cs-section-block")].map(block=>{
     const name=block.querySelector(".section-name").textContent.trim();
+    const isPractical=block.dataset.variant==="practical";
     const rows=[...block.querySelectorAll("tbody tr")].map(tr=>{
       const cells=tr.querySelectorAll("td");
+      if(isPractical){
+        return{
+          pos:cells[0].textContent.trim(),
+          name:cells[1].textContent.trim(),
+          call:cells[2].textContent.trim(),
+          contact:"raw",
+          contactVal:cells[3].textContent.trim(),
+        };
+      }
       return{
         pos:cells[0].textContent.trim(),
         name:cells[1].textContent.trim(),
@@ -1681,7 +1819,7 @@ function saveCurrentCsFromDom(){
         contactVal:cells[4].textContent.trim(),
       };
     });
-    return{name,rows};
+    return isPractical?{name,variant:"practical",rows}:{name,agencyLabel:block.querySelector("thead th.agency-header").textContent.trim(),rows};
   });
 
   debouncedCloudSave(cs);
