@@ -367,6 +367,11 @@ button{font-family:inherit}
 .sel-toolbar button.active{background:var(--accent-soft);color:var(--accent)}
 .sel-toolbar-sep{width:1px;background:var(--border);margin:3px 2px}
 .sel-color-btn{font-size:16px!important;line-height:1}
+.sel-color-trigger{position:relative}
+.sel-color-trigger-dot{width:14px;height:14px;border-radius:50%;background:conic-gradient(#007aff,#ff3b30,#ffcc00,#34c759,#8e8e93,#007aff);display:block;border:1px solid rgba(0,0,0,0.1)}
+.sel-color-popover{position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-lg);padding:5px;display:none;gap:2px;z-index:10}
+.sel-color-popover.open{display:flex}
+.sel-font-btn{font-size:11px!important;font-weight:700;width:auto!important;padding:0 6px}
 @media print{.sel-toolbar{display:none!important}}
 </style>
 </head>
@@ -1877,12 +1882,18 @@ function ensureSelectionToolbar(){
     <button data-cmd="italic" onmousedown="event.preventDefault()" onclick="applyTextFormat('italic')"><i>I</i></button>
     <button data-cmd="underline" onmousedown="event.preventDefault()" onclick="applyTextFormat('underline')"><u>U</u></button>
     <span class="sel-toolbar-sep"></span>
-    <button class="sel-color-btn" style="color:#007aff" title="Blue" onmousedown="event.preventDefault()" onclick="applyTextColor('#007aff')">●</button>
-    <button class="sel-color-btn" style="color:#ff3b30" title="Red" onmousedown="event.preventDefault()" onclick="applyTextColor('#ff3b30')">●</button>
-    <button class="sel-color-btn" style="color:#8e8e93" title="Grey" onmousedown="event.preventDefault()" onclick="applyTextColor('#8e8e93')">●</button>
-    <button class="sel-color-btn" style="color:#1c1c1e" title="Black" onmousedown="event.preventDefault()" onclick="applyTextColor('#1c1c1e')">●</button>
-    <button class="sel-color-btn" style="color:#ffcc00" title="Yellow" onmousedown="event.preventDefault()" onclick="applyTextColor('#ffcc00')">●</button>
-    <button class="sel-color-btn" style="color:#34c759" title="Green" onmousedown="event.preventDefault()" onclick="applyTextColor('#34c759')">●</button>`;
+    <button class="sel-color-trigger" title="Text color" onmousedown="event.preventDefault()" onclick="event.stopPropagation();toggleColorPopover()"><span class="sel-color-trigger-dot"></span></button>
+    <div class="sel-color-popover" id="sel-color-popover">
+      <button class="sel-color-btn" style="color:#007aff" title="Blue" onmousedown="event.preventDefault()" onclick="applyTextColor('#007aff')">●</button>
+      <button class="sel-color-btn" style="color:#ff3b30" title="Red" onmousedown="event.preventDefault()" onclick="applyTextColor('#ff3b30')">●</button>
+      <button class="sel-color-btn" style="color:#8e8e93" title="Grey" onmousedown="event.preventDefault()" onclick="applyTextColor('#8e8e93')">●</button>
+      <button class="sel-color-btn" style="color:#1c1c1e" title="Black" onmousedown="event.preventDefault()" onclick="applyTextColor('#1c1c1e')">●</button>
+      <button class="sel-color-btn" style="color:#ffcc00" title="Yellow" onmousedown="event.preventDefault()" onclick="applyTextColor('#ffcc00')">●</button>
+      <button class="sel-color-btn" style="color:#34c759" title="Green" onmousedown="event.preventDefault()" onclick="applyTextColor('#34c759')">●</button>
+    </div>
+    <span class="sel-toolbar-sep"></span>
+    <button class="sel-font-btn" title="Decrease font size" onmousedown="event.preventDefault()" onclick="adjustFontSize(-2)">A−</button>
+    <button class="sel-font-btn" title="Increase font size" onmousedown="event.preventDefault()" onclick="adjustFontSize(2)">A+</button>`;
   document.body.appendChild(el);
   selectionToolbarEl=el;
   return el;
@@ -1894,6 +1905,38 @@ function applyTextFormat(cmd){
 }
 function applyTextColor(color){
   document.execCommand("foreColor",false,color);
+  closeColorPopover();
+  if(currentApp==="callsheets"&&activeCsId)saveCurrentCsFromDom();
+}
+function toggleColorPopover(){
+  document.getElementById("sel-color-popover").classList.toggle("open");
+}
+function closeColorPopover(){
+  const p=document.getElementById("sel-color-popover");
+  if(p)p.classList.remove("open");
+}
+/* No native execCommand for relative font-size steps, so we wrap the
+   selection in a span with an explicit px size computed from whatever
+   size it currently renders at. */
+function adjustFontSize(delta){
+  const sel=window.getSelection();
+  if(!sel||sel.rangeCount===0||sel.isCollapsed)return;
+  const range=sel.getRangeAt(0);
+  let node=range.startContainer;
+  if(node.nodeType===3)node=node.parentElement;
+  const computed=node?window.getComputedStyle(node).fontSize:"12px";
+  let size=parseFloat(computed)||12;
+  size=Math.max(8,Math.min(36,size+delta));
+  const span=document.createElement("span");
+  span.style.fontSize=size+"px";
+  const frag=range.extractContents();
+  span.appendChild(frag);
+  range.insertNode(span);
+  sel.removeAllRanges();
+  const newRange=document.createRange();
+  newRange.selectNodeContents(span);
+  sel.addRange(newRange);
+  maybeShowSelectionToolbar();
   if(currentApp==="callsheets"&&activeCsId)saveCurrentCsFromDom();
 }
 function updateSelectionToolbarState(){
@@ -1904,7 +1947,7 @@ function updateSelectionToolbarState(){
     b.classList.toggle("active",active);
   });
 }
-function hideSelectionToolbar(){if(selectionToolbarEl)selectionToolbarEl.classList.remove("open");}
+function hideSelectionToolbar(){if(selectionToolbarEl){selectionToolbarEl.classList.remove("open");closeColorPopover();}}
 function maybeShowSelectionToolbar(){
   const sel=window.getSelection();
   if(!sel||sel.isCollapsed||sel.rangeCount===0){hideSelectionToolbar();return;}
