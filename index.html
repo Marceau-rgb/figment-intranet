@@ -132,10 +132,10 @@ button{font-family:inherit}
 .cs{background:var(--white);border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden}
 .cs-header{padding:22px 30px;border-bottom:1.2px solid #111}
 .cs-header-top{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:16px}
-.cs-header-figment{justify-self:start}
-.cs-header-callsheet{justify-self:center;text-align:center}
+.cs-header-figment{justify-self:start;min-width:0}
+.cs-header-callsheet{justify-self:center;text-align:center;min-width:0}
 .cs-callsheet-label{font-size:22px;font-weight:600;letter-spacing:3px;color:var(--text)}
-.cs-header-client{justify-self:end;display:flex;align-items:center;gap:10px}
+.cs-header-client{justify-self:end;display:flex;align-items:center;gap:10px;min-width:0;max-width:100%}
 .cs-header-bottom{text-align:center;margin-top:18px}
 .cs-title{font-size:17px;font-weight:700;letter-spacing:-0.3px;color:var(--text);margin-bottom:3px}
 .cs-subtitle{font-size:11px;color:var(--text-3)}
@@ -233,7 +233,7 @@ button{font-family:inherit}
 .wx-src a{color:var(--accent)}
 
 /* CLIENT LOGO DROPZONE */
-.logo-dropzone{height:96px;min-width:140px;max-width:340px;border-radius:8px;border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;overflow:hidden;background:#fafafa;padding:0 10px}
+.logo-dropzone{height:96px;min-width:0;max-width:340px;border-radius:8px;border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:1;overflow:hidden;background:#fafafa;padding:0 10px}
 .logo-dropzone:hover{border-color:var(--accent)}
 .logo-dropzone.has-logo{border:none;background:none;padding:0}
 .logo-dropzone img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
