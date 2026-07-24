@@ -1014,10 +1014,12 @@ function createCategory(){
   if(!name){alert("Give the category a name first.");return;}
   const icon=document.getElementById("new-cat-icon").value.trim()||"📁";
   const id="cat_"+Date.now();
-  CATS.push({id,label:name,icon,color:newCategoryColor});
+  const cat={id,label:name,icon,color:newCategoryColor};
+  CATS.push(cat);
   closeNewCategoryModal();
   buildContactNav();
   renderContacts();
+  cloudSaveCategory(cat);
 }
 
 function setContactFilter(id){
@@ -1087,7 +1089,7 @@ function renderContacts(){
   }
 }
 
-function delContact(id){if(confirm("Delete this contact?"))CONTACTS=CONTACTS.filter(c=>c.id!==id),renderContacts(),buildContactNav();}
+function delContact(id){if(confirm("Delete this contact?"))CONTACTS=CONTACTS.filter(c=>c.id!==id),renderContacts(),buildContactNav(),cloudDeleteContact(id);}
 
 function openContactModal(id){
   editContactId=id;
@@ -1139,6 +1141,7 @@ function saveContact(){
   if(editContactId)CONTACTS=CONTACTS.map(c=>c.id===editContactId?contact:c);
   else CONTACTS.push(contact);
   closeContactModal();renderContacts();buildContactNav();
+  cloudSaveContact(contact);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1216,6 +1219,66 @@ function cloudSubscribeToEstChanges(onChange){
   if(!cloud)return;
   cloud.channel("estimates_changes")
     .on("postgres_changes",{event:"*",schema:"public",table:"estimates"},onChange)
+    .subscribe();
+}
+
+/* Same mechanism again, for the Contacts app — one row per contact, one row
+   per category. Categories use a text id (e.g. "assistant_prod" or a
+   generated "cat_<timestamp>"), so that table's primary key is text, not
+   bigint, unlike the others. */
+async function cloudLoadAllContacts(){
+  if(!cloud)return null;
+  try{
+    const{data,error}=await cloud.from("contacts").select("id,data").order("id");
+    if(error||!data)return null;
+    return data.map(row=>({...row.data,id:row.id}));
+  }catch(e){return null;}
+}
+async function cloudSaveContact(c){
+  if(!cloud)return;
+  try{await cloud.from("contacts").upsert({id:c.id,data:c,updated_at:new Date().toISOString()});}catch(e){}
+}
+async function cloudDeleteContact(id){
+  if(!cloud)return;
+  try{await cloud.from("contacts").delete().eq("id",id);}catch(e){}
+}
+async function cloudSeedContactsIfEmpty(){
+  if(!cloud)return;
+  try{
+    const rows=CONTACTS.map(c=>({id:c.id,data:c,updated_at:new Date().toISOString()}));
+    await cloud.from("contacts").upsert(rows);
+  }catch(e){}
+}
+function cloudSubscribeToContactChanges(onChange){
+  if(!cloud)return;
+  cloud.channel("contacts_changes")
+    .on("postgres_changes",{event:"*",schema:"public",table:"contacts"},onChange)
+    .subscribe();
+}
+
+async function cloudLoadAllCategories(){
+  if(!cloud)return null;
+  try{
+    const{data,error}=await cloud.from("categories").select("id,data").order("id");
+    if(error||!data)return null;
+    return data.map(row=>({...row.data,id:row.id}));
+  }catch(e){return null;}
+}
+async function cloudSaveCategory(cat){
+  if(!cloud)return;
+  try{await cloud.from("categories").upsert({id:cat.id,data:cat,updated_at:new Date().toISOString()});}catch(e){}
+}
+async function cloudSeedCategoriesIfEmpty(){
+  if(!cloud)return;
+  try{
+    const rows=CATS.map(c=>({id:c.id,data:c,updated_at:new Date().toISOString()}));
+    await cloud.from("categories").upsert(rows);
+  }catch(e){}
+}
+function cloudSubscribeToCategoryChanges(onChange){
+  if(!cloud)return;
+  cloud.channel("categories_changes")
+    .on("postgres_changes",{event:"*",schema:"public",table:"categories"},onChange)
     .subscribe();
 }
 
@@ -3024,6 +3087,51 @@ if(cloudEnabled){
     }
     renderEstNav();
     if(currentApp==="estimates"&&!activeEstId)renderEstList();
+  });
+}
+
+if(cloudEnabled){
+  // Categories first (contacts reference them), then contacts. If a table
+  // comes back empty, this is the very first time anyone has connected this
+  // intranet to Supabase — push our built-in starting set up as the shared
+  // baseline everyone will build on from here.
+  cloudLoadAllCategories().then(rows=>{
+    if(rows&&rows.length){CATS=rows;buildContactNav();renderContacts();}
+    else cloudSeedCategoriesIfEmpty();
+  });
+  cloudLoadAllContacts().then(rows=>{
+    if(rows&&rows.length){
+      CONTACTS=rows;
+      nextContactId=Math.max(...rows.map(r=>r.id));
+      buildContactNav();renderContacts();
+    }else{
+      cloudSeedContactsIfEmpty();
+    }
+  });
+
+  cloudSubscribeToCategoryChanges(payload=>{
+    if(payload.eventType==="DELETE"){
+      const id=payload.old.id;
+      CATS=CATS.filter(c=>c.id!==id);
+    }else{
+      const incoming={...payload.new.data,id:payload.new.id};
+      const idx=CATS.findIndex(c=>c.id===incoming.id);
+      if(idx===-1)CATS.push(incoming);else CATS[idx]=incoming;
+    }
+    buildContactNav();
+    if(currentApp==="contacts")renderContacts();
+  });
+  cloudSubscribeToContactChanges(payload=>{
+    if(payload.eventType==="DELETE"){
+      const id=payload.old.id;
+      CONTACTS=CONTACTS.filter(c=>c.id!==id);
+    }else{
+      const incoming={...payload.new.data,id:payload.new.id};
+      const idx=CONTACTS.findIndex(c=>c.id===incoming.id);
+      if(idx===-1)CONTACTS.push(incoming);else CONTACTS[idx]=incoming;
+    }
+    buildContactNav();
+    if(currentApp==="contacts")renderContacts();
   });
 }
 </script>
