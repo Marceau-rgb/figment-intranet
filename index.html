@@ -180,7 +180,8 @@ button{font-family:inherit}
 .cs-table td.call{color:var(--text);font-variant-numeric:tabular-nums}
 .cs-table td.call.early{font-weight:700}
 .cs-table td.contact{color:var(--text-3)}
-.est-total{font-weight:700!important;color:var(--text)!important;font-variant-numeric:tabular-nums}
+.est-total{font-weight:700!important;color:var(--text)!important;font-variant-numeric:tabular-nums;white-space:nowrap}
+.est-table td.call,.est-table td.agency{white-space:nowrap}
 .cs-table td.contact a{color:var(--accent);text-decoration:none}
 .badge-agency{display:inline-block;font-size:10px;color:var(--accent);background:var(--accent-soft);border-radius:4px;padding:1px 6px;font-weight:500}
 .badge-nos{font-size:10.5px;color:var(--text-4);font-style:italic}
@@ -2528,7 +2529,7 @@ function estSectionHTML(s){
     </div>
     <div class="section-body">
       <table class="cs-table est-table">
-        <colgroup><col style="width:auto"><col style="width:52px"><col style="width:58px"><col style="width:85px"><col style="width:100px"><col class="col-del"></colgroup>
+        <colgroup><col style="width:auto"><col style="width:64px"><col style="width:58px"><col style="width:85px"><col style="width:100px"><col class="col-del"></colgroup>
         <thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th><th data-noprint></th></tr></thead>
         <tbody>${s.rows.map(estRowHTML).join("")}</tbody>
         <tfoot>
@@ -2643,13 +2644,22 @@ function updateEstGrandTotal(){
   const sumBody=document.getElementById("est-summary-body");
   if(sumBody){
     const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    sumBody.innerHTML=sectionTotals.map((s,i)=>`
+    const sectionLines=sectionTotals.map((s,i)=>`
       <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px">
         <span>[${letters[i]||i+1}] ${s.name}</span><span>${fmtMoney(s.total)}</span>
       </div>`).join("");
+    // The fee+insurance line always takes the letter right after the last
+    // real section — recomputed every time, so adding/removing sections
+    // automatically shifts it (e.g. 11 sections A–K → this line is [L]).
+    const feeLetter=letters[sectionTotals.length]||(sectionTotals.length+1);
+    const feeInsLine=`
+      <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px">
+        <span>[${feeLetter}] Production Fee + Insurance</span><span>${fmtMoney(feeAmt+insAmt)}</span>
+      </div>`;
+    sumBody.innerHTML=sectionLines+feeInsLine;
   }
   const sumTotalEl=document.getElementById("est-summary-total");
-  if(sumTotalEl)sumTotalEl.textContent=fmtMoney(grand);
+  if(sumTotalEl)sumTotalEl.textContent=fmtMoney(total);
 }
 
 function openNewEstSectionModal(){document.getElementById("newestsection-overlay").classList.add("open");setTimeout(()=>document.getElementById("new-estsection-name").focus(),250);}
@@ -2673,7 +2683,7 @@ function createEstSection(){
     </div>
     <div class="section-body">
       <table class="cs-table est-table">
-        <colgroup><col style="width:auto"><col style="width:52px"><col style="width:58px"><col style="width:85px"><col style="width:100px"><col class="col-del"></colgroup>
+        <colgroup><col style="width:auto"><col style="width:64px"><col style="width:58px"><col style="width:85px"><col style="width:100px"><col class="col-del"></colgroup>
         <thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th><th data-noprint></th></tr></thead>
         <tbody></tbody>
         <tfoot>
@@ -2876,7 +2886,7 @@ function renderEstEditor(){
           </div>
           <div class="section-body" style="padding:10px 22px 14px">
             <div id="est-summary-body"></div>
-            <div style="display:flex;justify-content:space-between;padding:6px 0 0;margin-top:4px;border-top:1px solid var(--border-light);font-weight:700;font-size:12.5px"><span>TOTAL ESTIMATE (excl. fee, insurance & VAT)</span><span id="est-summary-total">${fmtMoney(0)}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0 0;margin-top:4px;border-top:1px solid var(--border-light);font-weight:700;font-size:12.5px"><span>TOTAL ESTIMATE (excl. VAT)</span><span id="est-summary-total">${fmtMoney(0)}</span></div>
           </div>
         </div>
         <div id="est-sections-container">${est.sections.map(estSectionHTML).join("")}</div>
@@ -2989,6 +2999,9 @@ function collectEstRowsForExport(){
   const feePct=est.productionFeePercent||0;
   const feeAmt=costSummary*feePct/100;
   const insAmt=est.insuranceFlat||0;
+  const feeLetter=letters[sectionSubtotals.length]||(sectionSubtotals.length+1);
+  rows.push([`[${feeLetter}] Production Fee + Insurance`,"","","","",(feeAmt+insAmt).toFixed(2)]);
+  rows.push([]);
   rows.push(["Production Cost Summary","","","","",costSummary.toFixed(2)]);
   rows.push([`Production Fee (${feePct}%)`,"","","","",feeAmt.toFixed(2)]);
   rows.push(["Production Insurance (flat)","","","","",insAmt.toFixed(2)]);
