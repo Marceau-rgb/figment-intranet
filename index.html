@@ -37,7 +37,8 @@ button{font-family:inherit}
 .brand-logo{height:34px;width:auto;display:block}
 
 .app-switcher{display:flex;gap:3px;background:#f2f2f7;border-radius:9px;padding:3px;margin:10px 16px 4px}
-.app-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 4px;border:none;background:none;border-radius:7px;font-size:11.5px;font-weight:500;color:var(--text-3);cursor:pointer;transition:all 0.15s;font-family:inherit}
+.app-tab{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:4px;padding:6px 2px;border:none;background:none;border-radius:7px;font-size:11px;font-weight:500;color:var(--text-3);cursor:pointer;transition:all 0.15s;font-family:inherit;overflow:hidden}
+.app-tab span:not(.app-tab-icon){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .app-tab.active{background:#fff;color:var(--text);box-shadow:var(--shadow-sm)}
 .app-tab-icon{font-size:13px}
 
@@ -155,6 +156,7 @@ button{font-family:inherit}
 .section-header-row{display:flex;align-items:center;justify-content:space-between;padding:9px 22px;background:var(--bg);border-bottom:1px solid var(--border-light);cursor:pointer;user-select:none}
 .section-header-row:hover{background:#ececf0}
 .section-name{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-3)}
+.section-letter{font-size:10px;font-weight:700;letter-spacing:1.2px;color:var(--text-3)}
 .section-count-badge{font-size:10px;color:var(--text-4);background:var(--white);border:1px solid var(--border);border-radius:20px;padding:1px 8px}
 .section-toggle{font-size:11px;color:var(--text-4);transition:transform 0.2s}
 .section-toggle.open{transform:rotate(90deg)}
@@ -178,6 +180,7 @@ button{font-family:inherit}
 .cs-table td.call{color:var(--text);font-variant-numeric:tabular-nums}
 .cs-table td.call.early{font-weight:700}
 .cs-table td.contact{color:var(--text-3)}
+.est-total{font-weight:700!important;color:var(--text)!important;font-variant-numeric:tabular-nums}
 .cs-table td.contact a{color:var(--accent);text-decoration:none}
 .badge-agency{display:inline-block;font-size:10px;color:var(--accent);background:var(--accent-soft);border-radius:4px;padding:1px 6px;font-weight:500}
 .badge-nos{font-size:10.5px;color:var(--text-4);font-style:italic}
@@ -319,6 +322,7 @@ button{font-family:inherit}
   .cs-section-block{border:none;page-break-inside:avoid}
   .section-header-row{background:none;border:none;border-top:1.2px solid #111;padding:12px 0 4px;cursor:default}
   .section-name{font-size:9.5px;letter-spacing:1.2px;color:#111}
+  .section-letter{font-size:9.5px;letter-spacing:1.2px;color:#111}
   .section-count-badge,.section-toggle{display:none}
 
   /* ── Tables: no grid, editorial columns, one type size for all data cells ──
@@ -357,6 +361,7 @@ button{font-family:inherit}
   .street-dropzone:not(.has-image){display:none}
   .street-caption{margin-top:4px}
   .footer-address-line{margin-top:8px;font-size:11.5px}
+  .section-subtotal{display:none}
 }
 
 /* FLOATING SELECTION TOOLBAR (Bold / Italic / Underline) */
@@ -388,10 +393,13 @@ button{font-family:inherit}
 
     <div class="app-switcher">
       <button class="app-tab active" id="tab-contacts" onclick="switchApp('contacts')">
-        <span class="app-tab-icon">👥</span> Contacts
+        Contacts
       </button>
       <button class="app-tab" id="tab-callsheets" onclick="switchApp('callsheets')">
-        <span class="app-tab-icon">📋</span> Call Sheets
+        Sheets
+      </button>
+      <button class="app-tab" id="tab-estimates" onclick="switchApp('estimates')">
+        Quotes
       </button>
     </div>
 
@@ -415,6 +423,17 @@ button{font-family:inherit}
       <div id="nav-callsheets" class="hidden">
         <div class="sidebar-section">Call Sheets</div>
         <div id="cs-nav-list"></div>
+      </div>
+
+      <!-- ESTIMATES NAV -->
+      <div id="nav-estimates" class="hidden">
+        <div class="sidebar-section">Quotes</div>
+        <div id="est-nav-list"></div>
+        <div class="sidebar-section" style="margin-top:10px">Reference</div>
+        <div class="nav-item" onclick="openRateDatabase()">
+          <div class="nav-icon" style="background:#f2f2f7;font-size:13px">📊</div>
+          <span>Rate Database</span>
+        </div>
       </div>
     </div>
 
@@ -459,12 +478,40 @@ button{font-family:inherit}
         <div class="export-wrap">
           <button class="btn btn-ghost" onclick="toggleExportMenu()">⬇ Export ▾</button>
           <div class="export-menu" id="export-menu">
-            <div class="export-item" onclick="exportCsCSV()">📄 Export CSV</div>
-            <div class="export-item" onclick="exportCsXLSX()">📊 Export Excel</div>
-            <div class="export-item" onclick="closeExportMenu();printCallSheet()">🖨 Export PDF</div>
+            <div class="export-item" onclick="exportCsCSV()">Export CSV</div>
+            <div class="export-item" onclick="exportCsXLSX()">Export Excel</div>
+            <div class="export-item" onclick="closeExportMenu();printCallSheet()">Export PDF</div>
           </div>
         </div>
-        <button class="btn btn-primary" onclick="printCallSheet()">🖨 Print</button>
+        <button class="btn btn-primary" onclick="printCallSheet()">Print</button>
+      </div>
+    </div>
+
+    <!-- ESTIMATES LIST TOPBAR -->
+    <div class="topbar hidden" id="topbar-estlist">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="est-search" placeholder="Search a quote…" oninput="renderEstList()">
+      </div>
+      <div class="topbar-right">
+        <span class="count-badge" id="est-count-badge"></span>
+      </div>
+    </div>
+
+    <!-- ESTIMATE EDITOR TOPBAR -->
+    <div class="cs-editor-topbar hidden" id="topbar-esteditor" data-noprint>
+      <button class="btn-back" onclick="backToEstList()">← Back to Quotes</button>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="addEstSection()">＋ Section</button>
+        <div class="export-wrap">
+          <button class="btn btn-ghost" onclick="toggleEstExportMenu()">⬇ Export ▾</button>
+          <div class="export-menu" id="est-export-menu">
+            <div class="export-item" onclick="exportEstCSV()">Export CSV</div>
+            <div class="export-item" onclick="exportEstXLSX()">Export Excel</div>
+            <div class="export-item" onclick="closeEstExportMenu();printEstimate()">Export PDF</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="printEstimate()">Print</button>
       </div>
     </div>
 
@@ -480,7 +527,14 @@ button{font-family:inherit}
       <!-- PAGE: CALL SHEET EDITOR -->
       <div class="page" id="page-cseditor" style="padding:0"></div>
 
+      <!-- PAGE: ESTIMATES LIST -->
+      <div class="page" id="page-estlist"></div>
+
+      <!-- PAGE: ESTIMATE EDITOR -->
+      <div class="page" id="page-esteditor" style="padding:0"></div>
+
     </div>
+
   </div>
 </div>
 
@@ -587,36 +641,122 @@ button{font-family:inherit}
   </div>
 </div>
 
+<!-- MODAL: NEW ESTIMATE -->
+<div class="overlay" id="newest-overlay" onclick="handleNewEstOverlay(event)">
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="sheet-title">New quote</div>
+      <button class="btn-close" onclick="closeNewEstModal()">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="field"><div class="lbl">Client</div><input class="inp" id="nest-client" placeholder="e.g. RIMOWA"></div>
+      <div class="field"><div class="lbl">Project title</div><input class="inp" id="nest-title" placeholder="e.g. Warsaw Editorial — Dusk & Dawn"></div>
+      <div class="field"><div class="lbl">Date</div><input class="inp" id="nest-date" placeholder="e.g. July 23rd, 2026"></div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn-cancel" onclick="closeNewEstModal()">Cancel</button>
+      <button class="btn-save" onclick="createEstimate()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NEW ESTIMATE SECTION -->
+<div class="overlay" id="newestsection-overlay" onclick="handleNewEstSectionOverlay(event)">
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="sheet-title">New section</div>
+      <button class="btn-close" onclick="closeNewEstSectionModal()">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="field"><div class="lbl">Section name</div><input class="inp" id="new-estsection-name" placeholder="e.g. CREW, EQUIPMENT, LOCATIONS…"></div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn-cancel" onclick="closeNewEstSectionModal()">Cancel</button>
+      <button class="btn-save" onclick="createEstSection()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: RATE DATABASE -->
+<div class="overlay" id="ratedb-overlay" onclick="handleRateDbOverlay(event)">
+  <div class="sheet" style="max-width:640px">
+    <div class="sheet-head">
+      <div class="sheet-title">Figment Production — Rate Database</div>
+      <button class="btn-close" onclick="closeRateDatabase()">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="field">
+        <input class="inp" id="ratedb-search" placeholder="Search a role, service, or category…" oninput="renderRateDbList()">
+      </div>
+      <div id="ratedb-list" style="display:flex;flex-direction:column;gap:6px;max-height:420px;overflow-y:auto"></div>
+      <div class="add-row" style="margin-top:4px"><button class="btn-add-row" onclick="addRateRow()">＋ Add rate</button></div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn-cancel" onclick="closeRateDatabase()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PICK FROM RATE DATABASE (inside an estimate) -->
+<div class="overlay" id="ratepicker-overlay" onclick="handleRatePickerOverlay(event)">
+  <div class="sheet" style="max-width:560px">
+    <div class="sheet-head">
+      <div class="sheet-title">Insert from Rate Database</div>
+      <button class="btn-close" onclick="closeRatePicker()">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="field">
+        <input class="inp" id="ratepicker-search" placeholder="Search…" oninput="renderRatePickerList()">
+      </div>
+      <div id="ratepicker-list" style="display:flex;flex-direction:column;gap:4px;max-height:400px;overflow-y:auto"></div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn-cancel" onclick="closeRatePicker()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ═══════════════════════════════════════════════════════════════
    APP SWITCHING
    ═══════════════════════════════════════════════════════════════ */
 let currentApp="contacts";
 
+let activeEstId=null; // declared early so switchApp can reference it before the estimates section defines the rest
 function switchApp(app){
   currentApp=app;
   document.getElementById("tab-contacts").classList.toggle("active",app==="contacts");
   document.getElementById("tab-callsheets").classList.toggle("active",app==="callsheets");
+  document.getElementById("tab-estimates").classList.toggle("active",app==="estimates");
   document.getElementById("nav-contacts").classList.toggle("hidden",app!=="contacts");
   document.getElementById("nav-callsheets").classList.toggle("hidden",app!=="callsheets");
+  document.getElementById("nav-estimates").classList.toggle("hidden",app!=="estimates");
 
   document.getElementById("page-contacts").classList.toggle("active",app==="contacts");
   document.getElementById("page-cslist").classList.toggle("active",app==="callsheets"&&!activeCsId);
   document.getElementById("page-cseditor").classList.toggle("active",app==="callsheets"&&!!activeCsId);
+  document.getElementById("page-estlist").classList.toggle("active",app==="estimates"&&!activeEstId);
+  document.getElementById("page-esteditor").classList.toggle("active",app==="estimates"&&!!activeEstId);
 
   document.getElementById("topbar-contacts").classList.toggle("hidden",app!=="contacts");
   document.getElementById("topbar-cslist").classList.toggle("hidden",!(app==="callsheets"&&!activeCsId));
   document.getElementById("topbar-cseditor").classList.toggle("hidden",!(app==="callsheets"&&!!activeCsId));
+  document.getElementById("topbar-estlist").classList.toggle("hidden",!(app==="estimates"&&!activeEstId));
+  document.getElementById("topbar-esteditor").classList.toggle("hidden",!(app==="estimates"&&!!activeEstId));
 
-  document.getElementById("btn-new-sidebar").textContent=app==="contacts"?"＋ New contact":"＋ New call sheet";
-  document.getElementById("btn-new-sidebar").onclick=app==="contacts"?()=>openContactModal(null):openNewCsModal;
+  if(app==="contacts")document.getElementById("btn-new-sidebar").textContent="＋ New contact";
+  else if(app==="callsheets")document.getElementById("btn-new-sidebar").textContent="＋ New call sheet";
+  else document.getElementById("btn-new-sidebar").textContent="＋ New quote";
+  document.getElementById("btn-new-sidebar").onclick=app==="contacts"?()=>openContactModal(null):app==="callsheets"?openNewCsModal:openNewEstModal;
 
   if(app==="callsheets"){renderCsNav();if(!activeCsId)renderCsList();}
+  if(app==="estimates"){renderEstNav();if(!activeEstId)renderEstList();}
 }
 
 function handleSidebarNew(){
   if(currentApp==="contacts")openContactModal(null);
-  else openNewCsModal();
+  else if(currentApp==="callsheets")openNewCsModal();
+  else openNewEstModal();
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1049,6 +1189,33 @@ function cloudSubscribeToChanges(onChange){
   if(!cloud)return;
   cloud.channel("call_sheets_changes")
     .on("postgres_changes",{event:"*",schema:"public",table:"call_sheets"},onChange)
+    .subscribe();
+}
+
+/* Same mechanism, second table — kept as separate functions (rather than a
+   generic "table name" parameter) so each stays simple to read and the two
+   data types never accidentally cross-write into each other's table. */
+async function cloudLoadAllEst(){
+  if(!cloud)return null;
+  try{
+    const{data,error}=await cloud.from("estimates").select("id,data").order("id");
+    if(error||!data)return null;
+    return data.map(row=>({...row.data,id:row.id}));
+  }catch(e){return null;}
+}
+async function cloudSaveEst(est){
+  if(!cloud)return;
+  try{await cloud.from("estimates").upsert({id:est.id,data:est,updated_at:new Date().toISOString()});}
+  catch(e){/* offline or misconfigured — local state still holds the edit */}
+}
+async function cloudDeleteEst(id){
+  if(!cloud)return;
+  try{await cloud.from("estimates").delete().eq("id",id);}catch(e){}
+}
+function cloudSubscribeToEstChanges(onChange){
+  if(!cloud)return;
+  cloud.channel("estimates_changes")
+    .on("postgres_changes",{event:"*",schema:"public",table:"estimates"},onChange)
     .subscribe();
 }
 
@@ -1582,15 +1749,15 @@ function printCallSheet(){
 // Rebuild the editor (with its handle/delete columns) once the print dialog
 // closes, on whichever signal the browser gives us first.
 window.addEventListener("beforeprint",()=>{if(csLeafletMap)csLeafletMap.invalidateSize();});
-window.addEventListener("afterprint",()=>{if(activeCsId)renderCsEditor();});
+window.addEventListener("afterprint",()=>{if(activeCsId)renderCsEditor();if(activeEstId)renderEstEditor();});
 
 /* The actions column (move/delete buttons) only exists to support on-screen
    editing. Rather than CSS-hiding/collapsing that <col>/<td> for print
    (fragile — some engines mis-render adjacent columns when a colgroup mixes
    visible and collapsed columns), we remove it from the DOM outright before
    printing, then fully re-render the editor afterward. */
-function stripEditingColumnsForPrint(){
-  const root=document.getElementById("cs-root");
+function stripEditingColumnsForPrint(rootId){
+  const root=document.getElementById(rootId||"cs-root");
   if(!root)return;
   root.querySelectorAll(".cs-table col.col-del").forEach(el=>el.remove());
   root.querySelectorAll(".cs-table th[data-noprint]").forEach(el=>el.remove());
@@ -1656,7 +1823,7 @@ async function refreshWeather(){
 function toggleExportMenu(){document.getElementById("export-menu").classList.toggle("open");}
 function closeExportMenu(){document.getElementById("export-menu").classList.remove("open");}
 document.addEventListener("click",e=>{
-  if(!e.target.closest(".export-wrap"))closeExportMenu();
+  if(!e.target.closest(".export-wrap")){closeExportMenu();closeEstExportMenu();}
 });
 
 function collectCsRowsForExport(){
@@ -1751,13 +1918,15 @@ function moveCsSection(btn,dir){
   const sibling=dir<0?block.previousElementSibling:block.nextElementSibling;
   if(!sibling)return;
   block.parentNode.insertBefore(dir<0?block:sibling,dir<0?sibling:block);
+  if(currentApp==="estimates"){relabelEstSections();updateEstGrandTotal();}
 }
 function delCsSection(btn){
   const block=btn.closest(".cs-section-block");
   const name=block.querySelector(".section-name").textContent.trim()||"this section";
   if(confirm(`Delete the "${name}" section and all its rows?`)){
     block.remove();
-    saveCurrentCsFromDom();
+    if(currentApp==="estimates"){relabelEstSections();updateEstGrandTotal();saveCurrentEstFromDom();}
+    else saveCurrentCsFromDom();
   }
 }
 
@@ -1902,11 +2071,13 @@ function applyTextFormat(cmd){
   document.execCommand(cmd,false,null);
   updateSelectionToolbarState();
   if(currentApp==="callsheets"&&activeCsId)saveCurrentCsFromDom();
+  if(currentApp==="estimates"&&activeEstId)saveCurrentEstFromDom();
 }
 function applyTextColor(color){
   document.execCommand("foreColor",false,color);
   closeColorPopover();
   if(currentApp==="callsheets"&&activeCsId)saveCurrentCsFromDom();
+  if(currentApp==="estimates"&&activeEstId)saveCurrentEstFromDom();
 }
 function toggleColorPopover(){
   document.getElementById("sel-color-popover").classList.toggle("open");
@@ -1938,6 +2109,7 @@ function adjustFontSize(delta){
   sel.addRange(newRange);
   maybeShowSelectionToolbar();
   if(currentApp==="callsheets"&&activeCsId)saveCurrentCsFromDom();
+  if(currentApp==="estimates"&&activeEstId)saveCurrentEstFromDom();
 }
 function updateSelectionToolbarState(){
   if(!selectionToolbarEl)return;
@@ -1954,8 +2126,8 @@ function maybeShowSelectionToolbar(){
   const anchor=sel.anchorNode;
   const anchorEl=anchor&&(anchor.nodeType===1?anchor:anchor.parentElement);
   const editable=anchorEl&&anchorEl.closest&&anchorEl.closest("[contenteditable]");
-  const insideCsRoot=anchorEl&&anchorEl.closest&&anchorEl.closest("#cs-root");
-  if(!editable||!insideCsRoot){hideSelectionToolbar();return;}
+  const insideEditorRoot=anchorEl&&anchorEl.closest&&(anchorEl.closest("#cs-root")||anchorEl.closest("#est-root"));
+  if(!editable||!insideEditorRoot){hideSelectionToolbar();return;}
   const rect=sel.getRangeAt(0).getBoundingClientRect();
   if(!rect||(rect.width===0&&rect.height===0)){hideSelectionToolbar();return;}
   const toolbar=ensureSelectionToolbar();
@@ -1969,7 +2141,7 @@ document.addEventListener("mouseup",e=>{
   setTimeout(maybeShowSelectionToolbar,0);
 });
 document.addEventListener("keyup",e=>{
-  if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest("#cs-root [contenteditable]")){
+  if(document.activeElement&&document.activeElement.closest&&(document.activeElement.closest("#cs-root [contenteditable]")||document.activeElement.closest("#est-root [contenteditable]"))){
     setTimeout(maybeShowSelectionToolbar,0);
   }
 });
@@ -1979,11 +2151,820 @@ document.addEventListener("selectionchange",()=>{
 });
 
 /* ═══════════════════════════════════════════════════════════════
+   RATE DATABASE — Figment Production reference rates
+   ═══════════════════════════════════════════════════════════════ */
+let RATES=[
+  {id:1,category:"Crew",item:"Executive Producer",unit:"day",rate:600},
+  {id:2,category:"Crew",item:"Production Manager",unit:"day",rate:450},
+  {id:3,category:"Crew",item:"Production Coordinator",unit:"day",rate:350},
+  {id:4,category:"Crew",item:"Production Assistant",unit:"day",rate:250},
+  {id:5,category:"Crew",item:"1st AD",unit:"day",rate:500},
+  {id:6,category:"Crew",item:"Set Manager",unit:"day",rate:350},
+  {id:7,category:"Photo",item:"Photographer",unit:"day",rate:1500},
+  {id:8,category:"Photo",item:"1st Photo Assistant",unit:"day",rate:400},
+  {id:9,category:"Photo",item:"2nd Photo Assistant",unit:"day",rate:300},
+  {id:10,category:"Photo",item:"Digital Tech",unit:"day",rate:450},
+  {id:11,category:"Styling",item:"Stylist",unit:"day",rate:600},
+  {id:12,category:"Styling",item:"Styling Assistant",unit:"day",rate:250},
+  {id:13,category:"Glam",item:"Hair Stylist",unit:"day",rate:500},
+  {id:14,category:"Glam",item:"Make Up Artist",unit:"day",rate:500},
+  {id:15,category:"Equipment",item:"Camera package",unit:"day",rate:800},
+  {id:16,category:"Equipment",item:"Lighting package",unit:"day",rate:600},
+  {id:17,category:"Equipment",item:"Grip package",unit:"day",rate:400},
+  {id:18,category:"Locations",item:"Studio rental",unit:"day",rate:1200},
+  {id:19,category:"Locations",item:"Location scouting",unit:"flat",rate:500},
+  {id:20,category:"Transport",item:"Production van + driver",unit:"day",rate:450},
+  {id:21,category:"Catering",item:"Full crew catering",unit:"day",rate:35},
+  {id:22,category:"Post-production",item:"Retouching",unit:"per image",rate:80},
+];
+let nextRateId=100;
+
+function openRateDatabase(){
+  document.getElementById("ratedb-search").value="";
+  renderRateDbList();
+  document.getElementById("ratedb-overlay").classList.add("open");
+}
+function closeRateDatabase(){document.getElementById("ratedb-overlay").classList.remove("open");}
+function handleRateDbOverlay(e){if(e.target===document.getElementById("ratedb-overlay"))closeRateDatabase();}
+function renderRateDbList(){
+  const q=(document.getElementById("ratedb-search").value||"").toLowerCase();
+  const filtered=RATES.filter(r=>!q||[r.category,r.item].some(v=>v&&v.toLowerCase().includes(q)));
+  const cats=[...new Set(filtered.map(r=>r.category))];
+  document.getElementById("ratedb-list").innerHTML=cats.map(cat=>{
+    const items=filtered.filter(r=>r.category===cat);
+    return`<div style="font-size:10px;font-weight:700;letter-spacing:0.5px;color:var(--text-4);text-transform:uppercase;margin-top:8px">${cat}</div>`+
+      items.map(r=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;background:#f9f9fb">
+        <input class="inp" style="flex:2" value="${r.item}" onchange="updateRate(${r.id},'item',this.value)">
+        <input class="inp" style="flex:1" value="${r.unit}" onchange="updateRate(${r.id},'unit',this.value)">
+        <input class="inp" style="flex:1" type="number" value="${r.rate}" onchange="updateRate(${r.id},'rate',this.value)">
+        <button class="mini-btn del-btn" onclick="delRate(${r.id})">✕</button>
+      </div>`).join("");
+  }).join("")||`<div class="empty" style="padding:20px">No rates found</div>`;
+}
+function updateRate(id,field,value){
+  const r=RATES.find(x=>x.id===id);
+  if(!r)return;
+  r[field]=field==="rate"?(parseFloat(value)||0):value;
+}
+function delRate(id){
+  if(confirm("Delete this rate?")){RATES=RATES.filter(r=>r.id!==id);renderRateDbList();}
+}
+function addRateRow(){
+  const cat=prompt("Category for this rate (e.g. Crew, Equipment, Locations)","Crew");
+  if(!cat)return;
+  RATES.push({id:++nextRateId,category:cat,item:"New item",unit:"day",rate:0});
+  renderRateDbList();
+}
+
+/* ══ Insert a rate straight into an open estimate ══ */
+let ratePickerTargetTbody=null;
+function openRatePicker(btn){
+  ratePickerTargetTbody=btn.closest(".cs-section-block").querySelector("tbody");
+  document.getElementById("ratepicker-search").value="";
+  renderRatePickerList();
+  document.getElementById("ratepicker-overlay").classList.add("open");
+}
+function closeRatePicker(){document.getElementById("ratepicker-overlay").classList.remove("open");}
+function handleRatePickerOverlay(e){if(e.target===document.getElementById("ratepicker-overlay"))closeRatePicker();}
+function renderRatePickerList(){
+  const q=(document.getElementById("ratepicker-search").value||"").toLowerCase();
+  const filtered=RATES.filter(r=>!q||[r.category,r.item].some(v=>v&&v.toLowerCase().includes(q)));
+  document.getElementById("ratepicker-list").innerHTML=filtered.map(r=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:6px;cursor:pointer" onmouseover="this.style.background='#f2f2f7'" onmouseout="this.style.background='none'" onclick="insertRateIntoEstimate(${r.id})">
+      <span>${r.item} <span style="color:var(--text-4);font-size:11px">· ${r.category}</span></span>
+      <span style="font-weight:600">€${r.rate}/${r.unit}</span>
+    </div>`).join("")||`<div class="empty" style="padding:20px">No matches</div>`;
+}
+function insertRateIntoEstimate(rateId){
+  const r=RATES.find(x=>x.id===rateId);
+  if(!r||!ratePickerTargetTbody)return;
+  const tr=document.createElement("tr");
+  tr.innerHTML=estRowInnerHTML({desc:r.item,qty:1,unit:r.unit,rate:r.rate});
+  ratePickerTargetTbody.appendChild(tr);
+  updateEstSectionSubtotal(ratePickerTargetTbody.closest(".cs-section-block"));
+  closeRatePicker();
+  if(currentApp==="estimates"&&activeEstId)saveCurrentEstFromDom();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ESTIMATES DATA & LOGIC
+   ═══════════════════════════════════════════════════════════════ */
+const FIGMENT_TERMS_HTML=`<b>Acceptance of Terms</b><br>
+Any confirmation of an order by the Client constitutes full, unconditional, and irrevocable acceptance of the present terms and conditions, to the exclusion of any other document. No deviation from these terms shall be valid unless expressly agreed in writing by both parties and stated in the Purchase Order.
+<br><br>
+<b>Order Confirmation</b><br>
+An order shall be deemed firm and binding only upon receipt by Figment Production of the quotation, returned unmodified and accompanied by the Client's explicit written acceptance by email. Failing such confirmation, Figment Production reserves the right, at its sole discretion, not to commence any work. In the absence of acceptance within one (1) week from the date of issue, the quotation shall automatically lapse and become null and void. Figment Production further reserves the right, upon prior notice to the Client, to amend pricing and/or delivery timelines.
+<br><br>
+<b>Payment Terms</b><br>
+A deposit of 75% of the total amount is due prior to the shooting day and constitutes a condition precedent to the commencement of services. The balance of 25% shall be payable within thirty (30) days following the final shooting day. The Client's payment obligations shall remain absolute and shall not be subject to any delay or non-payment by third parties. Any bank charges, transfer fees, or currency exchange costs incurred, particularly in the case of international payments, may be invoiced to the Client. Any sum not paid by its due date shall automatically and without prior notice accrue late payment interest at a rate equal to the European Central Bank base rate plus ten (10) percentage points, in accordance with Article L.441-6 of the French Commercial Code. A fixed indemnity of forty euros (€40) for recovery costs shall also be due.
+<br><br>
+<b>Working Time and Overtime</b><br>
+Crew services are provided on the basis of a ten (10)-hour working day, including a one (1)-hour break. Models and beauty teams are engaged on the basis of an eight (8)-hour working day. Any time exceeding these limits shall be considered overtime and invoiced as follows: fifty percent (+50%) for hours worked between ten (10) and twelve (12) hours, and one hundred percent (+100%) beyond twelve (12) hours. All overtime shall be subject to prior approval and shall be fully chargeable to the Client.
+<br><br>
+<b>Cancellation</b><br>
+In the event of cancellation by the Client, for any reason whatsoever, after commencement of the services, all work already performed shall be invoiced in full (100%), and any remaining services shall be invoiced at fifty percent (50%). In the event of cancellation by the Client of any services involving third-party contributors (including, but not limited to, directors, photographers, videographers, casting directors, stylists, makeup artists, hair stylists, and manicurists) engaged by Figment Production on the Client's behalf, the Client shall remain liable for one hundred percent (100%) of the corresponding fees.
+<br><br>
+<b>Usage Conditions</b><br>
+Unless otherwise expressly agreed in writing, Figment Production reserves the right to use, reproduce, and publish the produced content, once released, for its own promotional and marketing purposes, without limitation.`;
+
+let ESTIMATES=[
+  {
+    id:1,client:"RIMOWA",title:"RIMOWA EDITORIAL SHOOT IN WARSAW",subtitle:"Estimate V3 · Job FP003",
+    date:"19th June 2026",billTo:"Rimowa GmbH · Richard-Byrd-Strasse 13 · Cologne, Germany 50829 · irma.kubisty@rimowa.com",
+    quoteNumber:"FP003",validUntil:"Estimate Version 3",
+    logoDataUrl:null,currency:"€",productionFeePercent:8,insuranceFlat:2000,
+    notes:FIGMENT_TERMS_HTML,
+    sections:[
+      {name:"VIDEO",rows:[
+        {desc:"<b>Video Crew</b>",qty:"",unit:"",rate:""},
+        {desc:"Director & DOP — Sara Szymańska (incl. usage, prep, recce & shoot day)",qty:1,unit:"",rate:4000},
+        {desc:"Director & DOP — Nadia Szymańska (incl. usage, prep, recce & shoot day)",qty:1,unit:"",rate:4000},
+        {desc:"Camera Operator — Stanisław Cuske (incl. prep, recce & shoot day)",qty:1.5,unit:"",rate:1000},
+        {desc:"1st AD",qty:1,unit:"",rate:800},
+        {desc:"1st Camera Assistant",qty:1,unit:"",rate:400},
+        {desc:"Key Grip",qty:1,unit:"",rate:485},
+        {desc:"Grip Assistant",qty:1,unit:"",rate:400},
+        {desc:"Focus Puller",qty:1,unit:"",rate:485},
+        {desc:"Sound Engineer (incl. EQ)",qty:1,unit:"",rate:450},
+        {desc:"Gaffer (incl. recce & shoot day)",qty:1.5,unit:"",rate:450},
+        {desc:"Light Assistants (×2)",qty:2,unit:"",rate:315},
+        {desc:"<b>Equipment</b>",qty:"",unit:"",rate:""},
+        {desc:"35mm Film Roll (qty TBC depending on DOP)",qty:12,unit:"",rate:385},
+        {desc:"Camera & Lenses",qty:1,unit:"",rate:800},
+        {desc:"Grip EQ",qty:1,unit:"",rate:750},
+        {desc:"Digital EQ (incl. video EQ & preview)",qty:1,unit:"",rate:800},
+        {desc:"Lighting EQ",qty:1,unit:"",rate:1200},
+        {desc:"Delivery & Return (camera, lighting, grip)",qty:3,unit:"",rate:225},
+        {desc:"<b>Post Production</b>",qty:"",unit:"",rate:""},
+        {desc:"35mm Film Rolls Development — Poland",qty:12,unit:"",rate:225},
+        {desc:"35mm Film Rolls Scanning — Poland",qty:1,unit:"",rate:1000},
+        {desc:"Hard Drive",qty:1,unit:"",rate:250},
+        {desc:"Editing (2 days — London or Paris)",qty:2,unit:"",rate:1500},
+        {desc:"Color Grading (Paris or London)",qty:1,unit:"",rate:2400},
+        {desc:"Sound Design (6 videos) — flat fee",qty:1,unit:"",rate:1200},
+        {desc:"Exports & Formats (6 videos, incl. logos, monograms)",qty:1,unit:"",rate:800},
+        {desc:"Post-Producer",qty:2,unit:"",rate:400},
+      ]},
+      {name:"PHOTOGRAPHY — DIGITAL ONLY & WARSAW BASED TEAM",rows:[
+        {desc:"<b>Photography Crew</b>",qty:"",unit:"",rate:""},
+        {desc:"Photographer — Warsaw based (incl. usage, prep, recce & shoot day)",qty:1,unit:"",rate:2000},
+        {desc:"1st Photo Assistant (incl. recce, shoot day)",qty:1.5,unit:"",rate:385},
+        {desc:"Light Assistant",qty:1,unit:"",rate:300},
+        {desc:"<b>Equipment</b>",qty:"",unit:"",rate:""},
+        {desc:"Camera & Lenses",qty:1,unit:"",rate:600},
+        {desc:"Lighting EQ & Gear",qty:1,unit:"",rate:600},
+        {desc:"Delivery",qty:1,unit:"",rate:225},
+        {desc:"<b>Post-Production</b>",qty:"",unit:"",rate:""},
+        {desc:"Retouching (2 rounds, 6 images)",qty:6,unit:"",rate:70},
+        {desc:"Post-Producer",qty:1,unit:"",rate:400},
+      ]},
+      {name:"LOCATION",rows:[
+        {desc:"<b>Location</b>",qty:"",unit:"",rate:""},
+        {desc:"Basecamp",qty:2,unit:"",rate:850},
+        {desc:"Parkings",qty:1,unit:"",rate:450},
+        {desc:"Permits",qty:1,unit:"",rate:1500},
+        {desc:"Electricity & Cleaning",qty:1,unit:"",rate:100},
+        {desc:"Police Officer — TBC",qty:1,unit:"",rate:0},
+        {desc:"<b>Crew</b>",qty:"",unit:"",rate:""},
+        {desc:"Location Manager (incl. prep, recce & shoot day)",qty:2,unit:"",rate:600},
+        {desc:"Set Manager — TBC",qty:1.5,unit:"",rate:350},
+        {desc:"Scouting Locations",qty:2,unit:"",rate:250},
+      ]},
+      {name:"CASTING",rows:[
+        {desc:"<b>Talents</b>",qty:"",unit:"",rate:""},
+        {desc:"Model (recognizable, young boy) — Warsaw based, incl. 20% agency fee",qty:1,unit:"",rate:1800},
+        {desc:"Model (recognizable, young girl) — Warsaw based, incl. 20% agency fee",qty:1,unit:"",rate:1800},
+        {desc:"Model (unrecognizable, older man) — Warsaw based, incl. 20% agency fee",qty:1,unit:"",rate:840},
+        {desc:"Model (unrecognizable, older woman) — Warsaw based, incl. 20% agency fee",qty:1,unit:"",rate:840},
+        {desc:"<b>Casting Director</b>",qty:"",unit:"",rate:""},
+        {desc:"Casting Director — Ernest Rudzki",qty:1,unit:"",rate:1000},
+      ]},
+      {name:"STYLING",rows:[
+        {desc:"<b>Crew</b>",qty:"",unit:"",rate:""},
+        {desc:"Stylist (incl. prep, fittings, shoot day)",qty:1,unit:"",rate:5000},
+        {desc:"Stylist Assistant — Paris (incl. prep, fittings, returns, shoot day)",qty:5,unit:"",rate:400},
+        {desc:"Stylist Assistant — Warsaw (×2)",qty:2,unit:"",rate:250},
+        {desc:"<b>Expenses</b>",qty:"",unit:"",rate:""},
+        {desc:"Wardrobe Allowance",qty:1,unit:"",rate:5000},
+        {desc:"Collection Transport — Excessive Luggage",qty:8,unit:"",rate:70},
+        {desc:"Rimowa Products Transport — C/O Rimowa",qty:0,unit:"",rate:0},
+        {desc:"<b>Fittings — Paris</b>",qty:"",unit:"",rate:""},
+        {desc:"Fitting Studio",qty:1,unit:"",rate:800},
+        {desc:"Fitting Models (×2)",qty:2,unit:"",rate:600},
+        {desc:"Styling EQ",qty:1,unit:"",rate:150},
+        {desc:"Breakfast & Lunch & Craft",qty:10,unit:"",rate:25},
+      ]},
+      {name:"SET DESIGN",rows:[
+        {desc:"<b>Props</b>",qty:"",unit:"",rate:""},
+        {desc:"Car — \"The Car In the Front\"",qty:1,unit:"",rate:600},
+        {desc:"Car POV — \"Camera Inside\"",qty:1,unit:"",rate:500},
+        {desc:"Motorbike",qty:1,unit:"",rate:300},
+        {desc:"Bicycle",qty:1,unit:"",rate:200},
+      ]},
+      {name:"BEAUTY",rows:[
+        {desc:"<b>Crew</b>",qty:"",unit:"",rate:""},
+        {desc:"Hair Stylist — Warsaw based, incl. 20% agency fee",qty:1,unit:"",rate:840},
+        {desc:"Hair Stylist Assistant — Warsaw based",qty:1,unit:"",rate:200},
+        {desc:"Make Up Artist — Warsaw based, incl. 20% agency fee",qty:1,unit:"",rate:840},
+        {desc:"Make Up Artist Assistant — Warsaw based",qty:1,unit:"",rate:200},
+        {desc:"Nail Artist (come & go)",qty:1,unit:"",rate:350},
+        {desc:"<b>Equipment</b>",qty:"",unit:"",rate:""},
+        {desc:"Beauty Stations (incl. in Production EQ)",qty:0,unit:"",rate:0},
+      ]},
+      {name:"PRODUCTION",rows:[
+        {desc:"<b>Pre Production</b>",qty:"",unit:"",rate:""},
+        {desc:"Producer — Paris based",qty:6,unit:"",rate:700},
+        {desc:"Producer — Warsaw based",qty:5,unit:"",rate:650},
+        {desc:"Production Manager — Warsaw based",qty:3,unit:"",rate:500},
+        {desc:"Production Assistant — Paris based",qty:0,unit:"",rate:0},
+        {desc:"Production Assistant — Warsaw based",qty:2,unit:"",rate:350},
+        {desc:"<b>On Set Production</b>",qty:"",unit:"",rate:""},
+        {desc:"Producer — Paris based",qty:1,unit:"",rate:700},
+        {desc:"Producer — Warsaw based",qty:1,unit:"",rate:650},
+        {desc:"Production Manager — Warsaw based",qty:1,unit:"",rate:500},
+        {desc:"Production Assistant — Warsaw based (×2)",qty:2,unit:"",rate:350},
+        {desc:"<b>Wrap</b>",qty:"",unit:"",rate:""},
+        {desc:"Producer — Paris based",qty:0.5,unit:"",rate:700},
+        {desc:"Producer — Warsaw based",qty:1,unit:"",rate:650},
+        {desc:"Production Assistant — Paris based",qty:1,unit:"",rate:0},
+      ]},
+      {name:"LOGISTICS",rows:[
+        {desc:"<b>Catering</b>",qty:"",unit:"",rate:""},
+        {desc:"Catering (breakfast & evening snacks, 40 pax)",qty:40,unit:"",rate:35},
+        {desc:"Craft Services (drinks, snacks, 40 pax)",qty:40,unit:"",rate:12},
+        {desc:"Delivery (incl. in catering cost)",qty:1,unit:"",rate:0},
+        {desc:"<b>Transport</b>",qty:"",unit:"",rate:""},
+        {desc:"Taxis — TBC",qty:1,unit:"",rate:300},
+        {desc:"Messengers",qty:1,unit:"",rate:100},
+        {desc:"VAN & Driver",qty:4,unit:"",rate:350},
+        {desc:"<b>Recce</b>",qty:"",unit:"",rate:""},
+        {desc:"VAN & Driver",qty:2,unit:"",rate:350},
+        {desc:"Craft & Drinks & Snacks",qty:12,unit:"",rate:10},
+        {desc:"<b>Production Equipment</b>",qty:"",unit:"",rate:""},
+        {desc:"Production EQ — Stage Hands",qty:1,unit:"",rate:2000},
+        {desc:"Production Supplies",qty:1,unit:"",rate:250},
+        {desc:"Delivery",qty:1,unit:"",rate:0},
+        {desc:"Miscellaneous",qty:1,unit:"",rate:0},
+      ]},
+      {name:"TRAVEL EXPENSES — PARIS CREW",rows:[
+        {desc:"<b>Travel</b>",qty:"",unit:"",rate:""},
+        {desc:"Flight Tickets (Video Team, Stylist) ×3",qty:3,unit:"",rate:500},
+        {desc:"Accommodation (Video Team, Stylist) — 3 nights ×3 people",qty:9,unit:"",rate:200},
+        {desc:"Per Diems — 2 days ×3 people",qty:6,unit:"",rate:40},
+        {desc:"Airport Transfers — Paris (2 rides ×3 people)",qty:6,unit:"",rate:60},
+        {desc:"Airport Transfers — Warsaw (2 rides ×3 people)",qty:6,unit:"",rate:55},
+      ]},
+      {name:"ACCOUNTING",rows:[
+        {desc:"<b>Crew — Expenses</b>",qty:"",unit:"",rate:""},
+        {desc:"Accounting — discounted",qty:1,unit:"",rate:100},
+        {desc:"Bank Transfer Fees — PL / FR",qty:1,unit:"",rate:200},
+      ]},
+    ]
+  }
+];
+let nextEstId=100;
+
+function fmtMoney(n){
+  const est=ESTIMATES.find(e=>e.id===activeEstId);
+  const cur=est?est.currency:"€";
+  return cur+(isNaN(n)?0:n).toFixed(2);
+}
+
+function estRowInnerHTML(r){
+  const hasQty=r.qty!==""&&r.qty!==undefined&&r.qty!==null;
+  const hasRate=r.rate!==""&&r.rate!==undefined&&r.rate!==null;
+  const total=(parseFloat(r.qty)||0)*(parseFloat(r.rate)||0);
+  const totalDisplay=(hasQty||hasRate)?fmtMoney(total):"";
+  return`
+    <td class="pos" contenteditable data-placeholder="Description">${r.desc||""}</td>
+    <td class="call" contenteditable data-placeholder="1" oninput="updateEstRowTotal(this)">${r.qty??""}</td>
+    <td class="agency" contenteditable data-placeholder="day">${r.unit||""}</td>
+    <td class="call" contenteditable data-placeholder="0" oninput="updateEstRowTotal(this)">${r.rate??""}</td>
+    <td class="contact est-total">${totalDisplay}</td>
+    <td class="actions-cell" data-noprint>
+      <button class="mini-btn" onclick="moveEstRow(this,-1)" title="Move up">▲</button>
+      <button class="mini-btn" onclick="moveEstRow(this,1)" title="Move down">▼</button>
+      <button class="mini-btn del-btn" onclick="delEstRow(this)" title="Delete">✕</button>
+    </td>`;
+}
+function estRowHTML(r){return`<tr>${estRowInnerHTML(r)}</tr>`;}
+
+function estSectionHTML(s){
+  const subtotal=s.rows.reduce((a,r)=>a+((parseFloat(r.qty)||0)*(parseFloat(r.rate)||0)),0);
+  return`<div class="cs-section-block">
+    <div class="section-header-row" onclick="toggleCsSection(this)">
+      <div style="display:flex;align-items:center;gap:4px"><span class="section-letter"></span><span class="section-name" contenteditable onclick="event.stopPropagation()">${s.name}</span></div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="section-subtotal" style="font-size:11px;color:var(--text-3);font-weight:600">${fmtMoney(subtotal)}</span>
+        <button class="mini-btn" data-noprint onclick="event.stopPropagation();moveCsSection(this,-1)" title="Move section up">▲</button>
+        <button class="mini-btn" data-noprint onclick="event.stopPropagation();moveCsSection(this,1)" title="Move section down">▼</button>
+        <button class="mini-btn del-btn" data-noprint onclick="event.stopPropagation();delCsSection(this)" title="Delete section">✕</button>
+        <span class="section-toggle open">›</span>
+      </div>
+    </div>
+    <div class="section-body">
+      <table class="cs-table est-table">
+        <colgroup><col style="width:auto"><col style="width:52px"><col style="width:58px"><col style="width:85px"><col style="width:100px"><col class="col-del"></colgroup>
+        <thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th><th data-noprint></th></tr></thead>
+        <tbody>${s.rows.map(estRowHTML).join("")}</tbody>
+        <tfoot>
+          <tr class="est-subtotal-row">
+            <td colspan="4" style="text-align:right;font-weight:600;color:var(--text-3);border-top:1px solid var(--border-light)">Subtotal</td>
+            <td class="est-total est-section-subtotal" style="border-top:1px solid var(--border-light)">${fmtMoney(subtotal)}</td>
+            <td class="actions-cell" data-noprint style="border-top:1px solid var(--border-light)"></td>
+          </tr>
+          <tr class="add-row"><td colspan="6" style="display:flex;gap:6px">
+            <button class="btn-add-row" onclick="addEstRow(this)">＋ Add line</button>
+            <button class="btn-add-row" onclick="openRatePicker(this)">From Rate Database</button>
+          </td></tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>`;
+}
+
+function addEstRow(btn){
+  const section=btn.closest(".cs-section-block");
+  const tbody=section.querySelector("tbody");
+  const tr=document.createElement("tr");
+  tr.innerHTML=estRowInnerHTML({desc:"",qty:1,unit:"day",rate:0});
+  tbody.appendChild(tr);
+  tr.querySelector("[contenteditable]").focus();
+  updateEstSectionSubtotal(section);
+}
+function delEstRow(btn){
+  const row=btn.closest("tr");
+  const section=row.closest(".cs-section-block");
+  row.style.transition="opacity 0.2s";row.style.opacity="0";
+  setTimeout(()=>{row.remove();updateEstSectionSubtotal(section);},200);
+}
+function moveEstRow(btn,dir){
+  const row=btn.closest("tr");
+  const sibling=dir<0?row.previousElementSibling:row.nextElementSibling;
+  if(!sibling)return;
+  row.parentNode.insertBefore(dir<0?row:sibling,dir<0?sibling:row);
+}
+function updateEstRowTotal(cell){
+  const tr=cell.closest("tr");
+  const qtyText=tr.children[1].textContent.trim();
+  const rateText=tr.children[3].textContent.trim();
+  const qty=parseFloat(qtyText)||0;
+  const rate=parseFloat(rateText)||0;
+  const totalCell=tr.querySelector(".est-total");
+  if(totalCell)totalCell.textContent=(qtyText||rateText)?fmtMoney(qty*rate):"";
+  updateEstSectionSubtotal(tr.closest(".cs-section-block"));
+}
+function updateEstSectionSubtotal(block){
+  if(!block)return;
+  let subtotal=0;
+  block.querySelectorAll("tbody tr").forEach(tr=>{
+    const qty=parseFloat(tr.children[1].textContent)||0;
+    const rate=parseFloat(tr.children[3].textContent)||0;
+    subtotal+=qty*rate;
+  });
+  const badge=block.querySelector(".section-subtotal");
+  if(badge)badge.textContent=fmtMoney(subtotal);
+  const alignedCell=block.querySelector(".est-section-subtotal");
+  if(alignedCell)alignedCell.textContent=fmtMoney(subtotal);
+  updateEstGrandTotal();
+}
+/* Keep each section header's [A]/[B]/[C]… letter in sync with its current
+   order — recomputed on every render, add, delete, or reorder rather than
+   baked in once, since sections can be moved around freely. */
+function relabelEstSections(){
+  const root=document.getElementById("est-root");
+  if(!root)return;
+  const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let i=0;
+  root.querySelectorAll(".cs-section-block").forEach(block=>{
+    if(block.id==="est-summary-block")return;
+    const letterEl=block.querySelector(".section-letter");
+    if(letterEl)letterEl.textContent=`[${letters[i]||i+1}] `;
+    i++;
+  });
+}
+
+function updateEstGrandTotal(){
+  const root=document.getElementById("est-root");
+  if(!root)return;
+  let grand=0;
+  const sectionTotals=[];
+  root.querySelectorAll(".cs-section-block").forEach(block=>{
+    if(block.id==="est-summary-block")return;
+    let sub=0;
+    block.querySelectorAll("tbody tr").forEach(tr=>{
+      const qty=parseFloat(tr.children[1].textContent)||0;
+      const rate=parseFloat(tr.children[3].textContent)||0;
+      sub+=qty*rate;
+    });
+    grand+=sub;
+    sectionTotals.push({name:block.querySelector(".section-name").textContent.trim(),total:sub});
+  });
+  const feeEl=document.getElementById("est-feepercent");
+  const feePct=feeEl?(parseFloat(feeEl.textContent)||0):0;
+  const feeAmt=grand*feePct/100;
+  const insEl=document.getElementById("est-insurance");
+  const insAmt=insEl?(parseFloat(insEl.textContent)||0):0;
+  const total=grand+feeAmt+insAmt;
+
+  const costEl=document.getElementById("est-costsummary-line");
+  const feeLine=document.getElementById("est-fee-line");
+  const totalEl=document.getElementById("est-grand-total");
+  if(costEl)costEl.textContent=fmtMoney(grand);
+  if(feeLine)feeLine.textContent=fmtMoney(feeAmt);
+  if(totalEl)totalEl.textContent=fmtMoney(total);
+
+  // Keep the per-section financial summary (top of the estimate, and what
+  // gets exported) in sync with whatever the sections currently total.
+  const sumBody=document.getElementById("est-summary-body");
+  if(sumBody){
+    const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    sumBody.innerHTML=sectionTotals.map((s,i)=>`
+      <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px">
+        <span>[${letters[i]||i+1}] ${s.name}</span><span>${fmtMoney(s.total)}</span>
+      </div>`).join("");
+  }
+  const sumTotalEl=document.getElementById("est-summary-total");
+  if(sumTotalEl)sumTotalEl.textContent=fmtMoney(grand);
+}
+
+function openNewEstSectionModal(){document.getElementById("newestsection-overlay").classList.add("open");setTimeout(()=>document.getElementById("new-estsection-name").focus(),250);}
+function closeNewEstSectionModal(){document.getElementById("newestsection-overlay").classList.remove("open");document.getElementById("new-estsection-name").value="";}
+function handleNewEstSectionOverlay(e){if(e.target===document.getElementById("newestsection-overlay"))closeNewEstSectionModal();}
+function addEstSection(){openNewEstSectionModal();}
+function createEstSection(){
+  const name=document.getElementById("new-estsection-name").value.trim().toUpperCase()||"NEW SECTION";
+  const div=document.createElement("div");
+  div.className="cs-section-block";
+  div.innerHTML=`
+    <div class="section-header-row" onclick="toggleCsSection(this)">
+      <div style="display:flex;align-items:center;gap:4px"><span class="section-letter"></span><span class="section-name" contenteditable onclick="event.stopPropagation()">${name}</span></div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="section-subtotal" style="font-size:11px;color:var(--text-3);font-weight:600">${fmtMoney(0)}</span>
+        <button class="mini-btn" data-noprint onclick="event.stopPropagation();moveCsSection(this,-1)" title="Move section up">▲</button>
+        <button class="mini-btn" data-noprint onclick="event.stopPropagation();moveCsSection(this,1)" title="Move section down">▼</button>
+        <button class="mini-btn del-btn" data-noprint onclick="event.stopPropagation();delCsSection(this)" title="Delete section">✕</button>
+        <span class="section-toggle open">›</span>
+      </div>
+    </div>
+    <div class="section-body">
+      <table class="cs-table est-table">
+        <colgroup><col style="width:auto"><col style="width:52px"><col style="width:58px"><col style="width:85px"><col style="width:100px"><col class="col-del"></colgroup>
+        <thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th><th data-noprint></th></tr></thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr class="est-subtotal-row">
+            <td colspan="4" style="text-align:right;font-weight:600;color:var(--text-3);border-top:1px solid var(--border-light)">Subtotal</td>
+            <td class="est-total est-section-subtotal" style="border-top:1px solid var(--border-light)">${fmtMoney(0)}</td>
+            <td class="actions-cell" data-noprint style="border-top:1px solid var(--border-light)"></td>
+          </tr>
+          <tr class="add-row"><td colspan="6" style="display:flex;gap:6px">
+            <button class="btn-add-row" onclick="addEstRow(this)">＋ Add line</button>
+            <button class="btn-add-row" onclick="openRatePicker(this)">From Rate Database</button>
+          </td></tr>
+        </tfoot>
+      </table>
+    </div>`;
+  document.getElementById("est-sections-container").appendChild(div);
+  closeNewEstSectionModal();
+  div.querySelector(".btn-add-row").click();
+  relabelEstSections();
+  updateEstGrandTotal();
+}
+
+function renderEstNav(){
+  document.getElementById("est-nav-list").innerHTML=ESTIMATES.map(e=>{
+    const active=activeEstId===e.id;
+    return`<div class="nav-item${active?" active":""}" onclick="openEstimate(${e.id})">
+      <div class="nav-icon" style="background:#fff4e0;font-size:12px">🧾</div>
+      <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.client||"Untitled"}</span>
+    </div>`;
+  }).join("")||`<div style="padding:10px 16px;font-size:12px;color:var(--text-4)">No quotes yet</div>`;
+}
+function renderEstList(){
+  const q=(document.getElementById("est-search").value||"").toLowerCase();
+  const filtered=ESTIMATES.filter(e=>!q||[e.client,e.title,e.date].some(v=>v&&v.toLowerCase().includes(q)));
+  document.getElementById("est-count-badge").textContent=`${filtered.length} quote${filtered.length!==1?"s":""}`;
+  const cards=filtered.map(e=>{
+    const total=e.sections.reduce((a,s)=>a+s.rows.reduce((b,r)=>b+((parseFloat(r.qty)||0)*(parseFloat(r.rate)||0)),0),0);
+    return`<div class="cs-list-card" onclick="openEstimate(${e.id})">
+      <button class="cs-list-del" onclick="event.stopPropagation();delEstimate(${e.id})">✕</button>
+      <div class="cs-list-card-client">${e.client}</div>
+      <div class="cs-list-card-title">${e.title}</div>
+      <div class="cs-list-card-date">${e.date}</div>
+      <div class="cs-list-card-meta"><span class="cs-list-card-count">${e.currency||"€"}${total.toFixed(2)}</span></div>
+    </div>`;
+  }).join("");
+  document.getElementById("page-estlist").innerHTML=`<div class="cs-list-grid">${cards}
+    <div class="cs-new-card" onclick="openNewEstModal()">
+      <div class="cs-new-card-icon">＋</div>
+      <div>New quote</div>
+    </div>
+  </div>`;
+}
+function delEstimate(id){
+  if(confirm("Delete this quote?")){
+    ESTIMATES=ESTIMATES.filter(e=>e.id!==id);
+    renderEstList();renderEstNav();
+    cloudDeleteEst(id);
+  }
+}
+function openNewEstModal(){document.getElementById("newest-overlay").classList.add("open");}
+function closeNewEstModal(){
+  document.getElementById("newest-overlay").classList.remove("open");
+  document.getElementById("nest-client").value="";
+  document.getElementById("nest-title").value="";
+  document.getElementById("nest-date").value="";
+}
+function handleNewEstOverlay(e){if(e.target===document.getElementById("newest-overlay"))closeNewEstModal();}
+function standardEstimateSectionsTemplate(){
+  const blank=(desc)=>({desc,qty:"",unit:"",rate:""});
+  return[
+    {name:"VIDEO",rows:[blank("Director & DOP"),blank("Camera Operator"),blank("1st AD")]},
+    {name:"PHOTOGRAPHY",rows:[blank("Photographer"),blank("1st Photo Assistant")]},
+    {name:"LOCATION",rows:[blank("Basecamp"),blank("Permits"),blank("Location Manager")]},
+    {name:"CASTING",rows:[blank("Model"),blank("Casting Director")]},
+    {name:"STYLING",rows:[blank("Stylist"),blank("Wardrobe Allowance")]},
+    {name:"SET DESIGN",rows:[blank("Props")]},
+    {name:"BEAUTY",rows:[blank("Hair Stylist"),blank("Make Up Artist")]},
+    {name:"PRODUCTION",rows:[blank("Producer"),blank("Production Manager"),blank("Production Assistant")]},
+    {name:"LOGISTICS",rows:[blank("Catering"),blank("VAN & Driver"),blank("Production Equipment")]},
+    {name:"TRAVEL EXPENSES",rows:[blank("Flight Tickets"),blank("Accommodation"),blank("Per Diems")]},
+    {name:"ACCOUNTING",rows:[blank("Accounting"),blank("Bank Transfer Fees")]},
+  ];
+}
+
+function createEstimate(){
+  const client=document.getElementById("nest-client").value.trim()||"CLIENT";
+  const title=document.getElementById("nest-title").value.trim()||"New project";
+  const date=document.getElementById("nest-date").value.trim()||"Date TBD";
+  const est={id:++nextEstId,client:client.toUpperCase(),title:title.toUpperCase(),subtitle:"",date,
+    billTo:"",quoteNumber:"FP"+String(nextEstId).padStart(3,"0"),validUntil:"",
+    logoDataUrl:null,currency:"€",productionFeePercent:8,insuranceFlat:0,notes:FIGMENT_TERMS_HTML,
+    sections:standardEstimateSectionsTemplate()};
+  ESTIMATES.push(est);
+  closeNewEstModal();
+  renderEstList();renderEstNav();
+  cloudSaveEst(est);
+  openEstimate(est.id);
+}
+function openEstimate(id){
+  activeEstId=id;
+  renderEstNav();
+  renderEstEditor();
+  document.getElementById("page-estlist").classList.remove("active");
+  document.getElementById("page-esteditor").classList.add("active");
+  document.getElementById("topbar-estlist").classList.add("hidden");
+  document.getElementById("topbar-esteditor").classList.remove("hidden");
+}
+function backToEstList(){
+  saveCurrentEstFromDom();
+  activeEstId=null;
+  renderEstNav();renderEstList();
+  document.getElementById("page-esteditor").classList.remove("active");
+  document.getElementById("page-estlist").classList.add("active");
+  document.getElementById("topbar-esteditor").classList.add("hidden");
+  document.getElementById("topbar-estlist").classList.remove("hidden");
+}
+
+function renameEstClient(){
+  const est=ESTIMATES.find(e=>e.id===activeEstId);
+  const v=prompt("Client name",est.client);
+  if(v&&v.trim()){
+    est.client=v.trim().toUpperCase();
+    document.getElementById("est-client").textContent=est.client;
+    renderEstNav();renderEstList();
+  }
+}
+function onEstLogoFile(file){
+  if(!file||!file.type.startsWith("image/"))return;
+  const est=ESTIMATES.find(e=>e.id===activeEstId);
+  const r=new FileReader();
+  r.onload=e=>{est.logoDataUrl=e.target.result;renderEstEditor();};
+  r.readAsDataURL(file);
+}
+function handleEstLogoDrop(e,el){
+  e.preventDefault();el.classList.remove("drag-over");
+  const file=e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(file)onEstLogoFile(file);
+}
+
+function renderEstEditor(){
+  const est=ESTIMATES.find(e=>e.id===activeEstId);
+  if(!est)return;
+  const logoInner=est.logoDataUrl?`<img src="${est.logoDataUrl}" alt="logo client">`:`<span class="logo-dropzone-icon">＋</span>`;
+  const figmentLogoInner=FIGMENT_LOGO_DATAURL?`<img src="${FIGMENT_LOGO_DATAURL}" alt="logo Figment">`:`<span class="logo-dropzone-icon">＋</span>`;
+  document.getElementById("page-esteditor").innerHTML=`
+    <div class="cs-editor-wrap">
+      <div class="cs" id="est-root">
+        <div class="cs-header">
+          <div class="cs-header-top">
+            <div class="cs-header-figment">
+              <label class="logo-dropzone${FIGMENT_LOGO_DATAURL?" has-logo":""}" title="Figment logo — click or drop an image"
+                ondragover="event.preventDefault();this.classList.add('drag-over')"
+                ondragleave="this.classList.remove('drag-over')"
+                ondrop="handleFigmentLogoDrop(event,this)">
+                <input type="file" accept="image/*" style="display:none" onchange="onFigmentLogoFile(this.files[0])">
+                ${figmentLogoInner}
+              </label>
+            </div>
+            <div class="cs-header-callsheet">
+              <div class="cs-callsheet-label">ESTIMATE</div>
+            </div>
+            <div class="cs-header-client">
+              <label class="logo-dropzone${est.logoDataUrl?" has-logo":""}" title="Client logo — click or drop an image"
+                ondragover="event.preventDefault();this.classList.add('drag-over')"
+                ondragleave="this.classList.remove('drag-over')"
+                ondrop="handleEstLogoDrop(event,this)">
+                <input type="file" accept="image/*" style="display:none" onchange="onEstLogoFile(this.files[0])">
+                ${logoInner}
+              </label>
+              <button class="rename-client-btn" data-noprint onclick="renameEstClient()" title="Rename client">✎</button>
+              <span id="est-client" style="display:none">${est.client}</span>
+            </div>
+          </div>
+          <div class="cs-header-bottom">
+            <div class="cs-title" contenteditable data-placeholder="Project name" id="est-title">${est.title}</div>
+            <div class="cs-subtitle" contenteditable data-placeholder="Subtitle" id="est-subtitle">${est.subtitle||""}</div>
+          </div>
+        </div>
+        <div class="cs-meta">
+          <div class="meta-block">
+            <div class="meta-label">Date</div>
+            <div class="meta-value"><span contenteditable data-placeholder="Quote date" id="est-date">${est.date||""}</span></div>
+          </div>
+          <div class="meta-block">
+            <div class="meta-label">Bill To</div>
+            <div class="meta-value"><span contenteditable data-placeholder="Client billing address / contact" id="est-billto">${est.billTo||""}</span></div>
+          </div>
+          <div class="meta-block">
+            <div class="meta-label">Quote Ref</div>
+            <div class="meta-value">
+              <span contenteditable data-placeholder="Q-001" id="est-quotenum">${est.quoteNumber||""}</span>
+              <small contenteditable data-placeholder="Valid until…" id="est-validuntil">${est.validUntil||""}</small>
+            </div>
+          </div>
+        </div>
+        <div id="est-summary-block" class="cs-section-block">
+          <div class="section-header-row" style="cursor:default">
+            <span class="section-name" style="pointer-events:none">SUMMARY</span>
+            <span class="section-toggle open" style="pointer-events:none">›</span>
+          </div>
+          <div class="section-body" style="padding:10px 22px 14px">
+            <div id="est-summary-body"></div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0 0;margin-top:4px;border-top:1px solid var(--border-light);font-weight:700;font-size:12.5px"><span>TOTAL ESTIMATE (excl. fee, insurance & VAT)</span><span id="est-summary-total">${fmtMoney(0)}</span></div>
+          </div>
+        </div>
+        <div id="est-sections-container">${est.sections.map(estSectionHTML).join("")}</div>
+        <div class="cs-footer">
+          <div class="footer-map-label">FINAL SUMMARY</div>
+          <div style="display:flex;justify-content:flex-end;margin-top:8px">
+            <div style="min-width:280px">
+              <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-3);padding:4px 0"><span>Production Cost Summary</span><span id="est-costsummary-line">${fmtMoney(0)}</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-3);padding:4px 0">
+                <span>Production Fee (<span contenteditable id="est-feepercent" oninput="updateEstGrandTotal()" style="display:inline-block;min-width:14px">${est.productionFeePercent??8}</span>% of cost summary)</span>
+                <span id="est-fee-line">${fmtMoney(0)}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-3);padding:4px 0">
+                <span>Production Insurance (flat fee)</span>
+                <span>${est.currency||"€"}<span contenteditable id="est-insurance" oninput="updateEstGrandTotal()" style="display:inline-block;min-width:24px">${est.insuranceFlat??0}</span></span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:var(--text);padding:8px 0 0;border-top:1.5px solid #111;margin-top:4px"><span>TOTAL ESTIMATE</span><span id="est-grand-total">${fmtMoney(0)}</span></div>
+              <div style="text-align:right;font-size:10.5px;color:var(--text-4);margin-top:4px">Total estimate does not include VAT</div>
+            </div>
+          </div>
+          <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:20px;break-inside:avoid;page-break-inside:avoid">
+            <div style="border:1px solid var(--border);border-radius:8px;padding:14px 16px;min-height:80px">
+              <div class="footer-map-label" style="margin-bottom:0">Client Signature</div>
+            </div>
+            <div style="border:1px solid var(--border);border-radius:8px;padding:14px 16px;min-height:80px">
+              <div class="footer-map-label" style="margin-bottom:0">Date of Validation</div>
+            </div>
+          </div>
+          <div style="margin-top:16px">
+            <div class="footer-map-label">NOTES / TERMS</div>
+            <div contenteditable data-placeholder="Payment terms, validity, exclusions…" id="est-notes" style="font-size:12px;color:var(--text-2);margin-top:6px;min-height:40px">${est.notes||""}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  relabelEstSections();
+  updateEstGrandTotal();
+}
+
+function saveCurrentEstFromDom(){
+  const est=ESTIMATES.find(e=>e.id===activeEstId);
+  if(!est)return;
+  const root=document.getElementById("est-root");
+  if(!root)return;
+  est.client=document.getElementById("est-client").textContent.trim();
+  est.title=document.getElementById("est-title").innerHTML.trim();
+  est.subtitle=document.getElementById("est-subtitle").innerHTML.trim();
+  est.date=document.getElementById("est-date").textContent.trim();
+  est.billTo=document.getElementById("est-billto").innerHTML.trim();
+  est.quoteNumber=document.getElementById("est-quotenum").textContent.trim();
+  est.validUntil=document.getElementById("est-validuntil").textContent.trim();
+  est.productionFeePercent=parseFloat(document.getElementById("est-feepercent").textContent)||0;
+  est.insuranceFlat=parseFloat(document.getElementById("est-insurance").textContent)||0;
+  est.notes=document.getElementById("est-notes").innerHTML.trim();
+
+  est.sections=[...root.querySelectorAll(".cs-section-block")].filter(b=>b.id!=="est-summary-block").map(block=>{
+    const name=block.querySelector(".section-name").textContent.trim();
+    const rows=[...block.querySelectorAll("tbody tr")].map(tr=>{
+      const cells=tr.querySelectorAll("td");
+      return{
+        desc:cells[0].innerHTML.trim(),
+        qty:cells[1].textContent.trim(),
+        unit:cells[2].innerHTML.trim(),
+        rate:cells[3].textContent.trim(),
+      };
+    });
+    return{name,rows};
+  });
+
+  debouncedCloudSaveEst(est);
+}
+
+// Same debounce pattern as call sheets — collapse rapid edits into one write.
+let cloudSaveEstTimers={};
+function debouncedCloudSaveEst(est){
+  if(!cloudEnabled)return;
+  clearTimeout(cloudSaveEstTimers[est.id]);
+  cloudSaveEstTimers[est.id]=setTimeout(()=>cloudSaveEst(est),900);
+}
+
+function printEstimate(){
+  saveCurrentEstFromDom();
+  stripEditingColumnsForPrint("est-root");
+  window.print();
+}
+
+function toggleEstExportMenu(){document.getElementById("est-export-menu").classList.toggle("open");}
+function closeEstExportMenu(){document.getElementById("est-export-menu").classList.remove("open");}
+
+function collectEstRowsForExport(){
+  const est=ESTIMATES.find(e=>e.id===activeEstId);
+  saveCurrentEstFromDom();
+  const rows=[["Section","Description","Qty","Unit","Rate","Total"]];
+  let costSummary=0;
+  const sectionSubtotals=[];
+  est.sections.forEach(s=>{
+    let sub=0;
+    s.rows.forEach(r=>{
+      const total=(parseFloat(r.qty)||0)*(parseFloat(r.rate)||0);
+      sub+=total;
+      rows.push([s.name,r.desc||"",r.qty||"",r.unit||"",r.rate||"",total.toFixed(2)]);
+    });
+    sectionSubtotals.push([s.name,sub]);
+    costSummary+=sub;
+  });
+  const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  rows.push([]);
+  rows.push(["SUMMARY","","","","",""]);
+  sectionSubtotals.forEach((s,i)=>rows.push([`[${letters[i]||i+1}] ${s[0]}`,"","","","",s[1].toFixed(2)]));
+  const feePct=est.productionFeePercent||0;
+  const feeAmt=costSummary*feePct/100;
+  const insAmt=est.insuranceFlat||0;
+  rows.push(["Production Cost Summary","","","","",costSummary.toFixed(2)]);
+  rows.push([`Production Fee (${feePct}%)`,"","","","",feeAmt.toFixed(2)]);
+  rows.push(["Production Insurance (flat)","","","","",insAmt.toFixed(2)]);
+  rows.push(["TOTAL ESTIMATE (excl. VAT)","","","","",(costSummary+feeAmt+insAmt).toFixed(2)]);
+  return{est,rows};
+}
+function exportEstCSV(){
+  const{est,rows}=collectEstRowsForExport();
+  const NL=String.fromCharCode(10);
+  const csv=rows.map(r=>r.map(v=>`"${(v+"").replace(/"/g,'""')}"`).join(",")).join(NL);
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=(est.client+"_"+est.title).replace(/[^\w-]+/g,"_")+".csv";
+  a.click();
+  closeEstExportMenu();
+}
+function exportEstXLSX(){
+  const{est,rows}=collectEstRowsForExport();
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"Estimate");
+  XLSX.writeFile(wb,(est.client+"_"+est.title).replace(/[^\w-]+/g,"_")+".xlsx");
+  closeEstExportMenu();
+}
+
+document.addEventListener("focusout",e=>{
+  if(currentApp==="estimates"&&activeEstId&&e.target.closest("#est-root")){
+    saveCurrentEstFromDom();
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════
    INIT
    ═══════════════════════════════════════════════════════════════ */
 buildContactNav();
 renderContacts();
 renderCsNav();
+renderEstNav();
 
 if(cloudEnabled){
   cloudLoadAll().then(rows=>{
@@ -2015,6 +2996,34 @@ if(cloudEnabled){
     }
     renderCsNav();
     if(currentApp==="callsheets"&&!activeCsId)renderCsList();
+  });
+}
+
+if(cloudEnabled){
+  cloudLoadAllEst().then(rows=>{
+    if(rows&&rows.length){
+      ESTIMATES=rows;
+      nextEstId=Math.max(...rows.map(r=>r.id));
+      renderEstNav();
+      if(currentApp==="estimates"&&!activeEstId)renderEstList();
+    }
+  });
+
+  // Same "reload the affected quote, never yank an open editor" approach
+  // used for call sheets above.
+  cloudSubscribeToEstChanges(payload=>{
+    if(payload.eventType==="DELETE"){
+      const id=payload.old.id;
+      ESTIMATES=ESTIMATES.filter(e=>e.id!==id);
+      if(activeEstId===id){activeEstId=null;backToEstList();}
+    }else{
+      const incoming={...payload.new.data,id:payload.new.id};
+      const idx=ESTIMATES.findIndex(e=>e.id===incoming.id);
+      if(idx===-1)ESTIMATES.push(incoming);
+      else if(activeEstId!==incoming.id)ESTIMATES[idx]=incoming;
+    }
+    renderEstNav();
+    if(currentApp==="estimates"&&!activeEstId)renderEstList();
   });
 }
 </script>
