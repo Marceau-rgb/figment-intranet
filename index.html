@@ -2654,7 +2654,7 @@ function updateEstGrandTotal(){
     const feeLetter=letters[sectionTotals.length]||(sectionTotals.length+1);
     const feeInsLine=`
       <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px">
-        <span>[${feeLetter}] Production Fee + Insurance</span><span>${fmtMoney(feeAmt+insAmt)}</span>
+        <span>[${feeLetter}] PRODUCTION FEE + INSURANCE</span><span>${fmtMoney(feeAmt+insAmt)}</span>
       </div>`;
     sumBody.innerHTML=sectionLines+feeInsLine;
   }
@@ -3000,7 +3000,7 @@ function collectEstRowsForExport(){
   const feeAmt=costSummary*feePct/100;
   const insAmt=est.insuranceFlat||0;
   const feeLetter=letters[sectionSubtotals.length]||(sectionSubtotals.length+1);
-  rows.push([`[${feeLetter}] Production Fee + Insurance`,"","","","",(feeAmt+insAmt).toFixed(2)]);
+  rows.push([`[${feeLetter}] PRODUCTION FEE + INSURANCE`,"","","","",(feeAmt+insAmt).toFixed(2)]);
   rows.push([]);
   rows.push(["Production Cost Summary","","","","",costSummary.toFixed(2)]);
   rows.push([`Production Fee (${feePct}%)`,"","","","",feeAmt.toFixed(2)]);
